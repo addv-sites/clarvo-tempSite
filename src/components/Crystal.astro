@@ -1,0 +1,59 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+const MARK_SRC = "/images/logo/crystal-mark.png";
+---
+
+<div class={`relative ${className}`}>
+  <img
+    src={MARK_SRC}
+    alt=""
+    aria-hidden="true"
+    class="block h-full w-full object-contain"
+    width="1181"
+    height="1201"
+  />
+
+  <div
+    class="crystal-sheen-mask absolute inset-0 overflow-hidden"
+    style={`-webkit-mask-image:url(${MARK_SRC});mask-image:url(${MARK_SRC});-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;`}
+  >
+    <div class="crystal-sheen absolute"></div>
+  </div>
+</div>
+
+<style>
+  .crystal-sheen {
+    inset: -75%;
+    background: linear-gradient(
+      115deg,
+      transparent 42%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 58%
+    );
+    mix-blend-mode: screen;
+    transform: translate(-40%, -40%);
+    animation: crystal-sweep 4s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes crystal-sweep {
+    0%,
+    100% {
+      transform: translate(-40%, -40%);
+    }
+    50% {
+      transform: translate(40%, 40%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crystal-sheen {
+      animation: none;
+      transform: translate(0, 0);
+    }
+  }
+</style>

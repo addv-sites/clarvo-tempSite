@@ -1,0 +1,45 @@
+---
+import { ChartColumn, Users, Box, FileText, ChartPie } from "@lucide/astro";
+
+const features = [
+  {
+    icon: ChartColumn,
+    title: "Visualiza",
+    description: "el estado de tu negocio en tiempo real.",
+  },
+  {
+    icon: Users,
+    title: "Gestiona",
+    description: "tus clientes y cobros sin complicaciones.",
+  },
+  {
+    icon: Box,
+    title: "Controla",
+    description: "tu inventario y servicios desde cualquier lugar.",
+  },
+  {
+    icon: FileText,
+    title: "Factura",
+    description: "de forma fácil y sin errores.",
+  },
+  {
+    icon: ChartPie,
+    title: "Toma decisiones",
+    description: "con información clara y actualizada.",
+  },
+];
+---
+
+<div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+  {
+    features.map(({ icon: Icon, title, description }) => (
+      <div>
+        <span class="flex h-14 w-14 items-center justify-center rounded-xl border border-brand-border bg-brand-card/60 text-brand-cyan">
+          <Icon class="h-6 w-6" />
+        </span>
+        <p class="mt-3 font-semibold text-white">{title}</p>
+        <p class="text-sm text-slate-300">{description}</p>
+      </div>
+    ))
+  }
+</div>

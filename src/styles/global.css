@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-cyan: #2fd2ff;
+  --color-brand-card: #0c1836;
+  --color-brand-border: #1c2e5c;
+}

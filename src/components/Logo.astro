@@ -1,0 +1,19 @@
+---
+interface Props {
+  size?: "hero" | "footer";
+}
+
+const { size = "hero" } = Astro.props;
+const widthClass = size === "hero" ? "w-64 md:w-80" : "w-48";
+---
+
+<picture>
+  <source srcset="/images/logo/logo-on-dark.webp" type="image/webp" />
+  <img
+    src="/images/logo/logo-on-dark.png"
+    alt="CLARVO — Tu negocio bajo control, by ADDV"
+    class={widthClass}
+    width="900"
+    height="338"
+  />
+</picture>

@@ -1,0 +1,67 @@
+---
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+interface Props {
+  laptopScreenshot?: string;
+  phoneScreenshot?: string;
+}
+
+const DEFAULT_LAPTOP = "/images/dashboard/laptop.png";
+const DEFAULT_PHONE = "/images/dashboard/phone.png";
+
+function publicFileExists(publicPath: string): boolean {
+  const diskPath = fileURLToPath(new URL(`../../public${publicPath}`, import.meta.url));
+  return existsSync(diskPath);
+}
+
+const { laptopScreenshot, phoneScreenshot } = Astro.props;
+
+const resolvedLaptop = laptopScreenshot ?? (publicFileExists(DEFAULT_LAPTOP) ? DEFAULT_LAPTOP : undefined);
+const resolvedPhone = phoneScreenshot ?? (publicFileExists(DEFAULT_PHONE) ? DEFAULT_PHONE : undefined);
+---
+
+<div class="relative">
+  <div class="w-full max-w-xl rounded-t-xl border-4 border-b-0 border-slate-700 bg-slate-900 p-2 shadow-2xl">
+    <div class="aspect-video overflow-hidden rounded-md bg-white">
+      {
+        resolvedLaptop ? (
+          <img
+            src={resolvedLaptop}
+            alt="Vista del dashboard de CLARVO en laptop"
+            class="h-full w-full object-cover"
+            width="1280"
+            height="720"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-300 text-sm text-slate-500">
+            Captura del dashboard pendiente
+          </div>
+        )
+      }
+    </div>
+  </div>
+  <div class="mx-auto h-3 w-full max-w-xl rounded-b-xl bg-slate-700"></div>
+
+  <div class="absolute -bottom-6 -right-4 w-28 rounded-2xl border-4 border-slate-700 bg-slate-900 p-1.5 shadow-2xl sm:-right-8 sm:w-32">
+    <div class="aspect-9/18 overflow-hidden rounded-lg bg-white">
+      {
+        resolvedPhone ? (
+          <img
+            src={resolvedPhone}
+            alt="Vista del dashboard de CLARVO en teléfono"
+            class="h-full w-full object-cover"
+            width="360"
+            height="760"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-300 p-2 text-center text-xs text-slate-500">
+            Captura pendiente
+          </div>
+        )
+      }
+    </div>
+  </div>
+</div>
