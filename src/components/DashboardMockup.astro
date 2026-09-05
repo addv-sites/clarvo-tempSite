@@ -1,67 +1,96 @@
 ---
 import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
+import Crystal from "./Crystal.astro";
 
 interface Props {
-  laptopScreenshot?: string;
-  phoneScreenshot?: string;
+  devicesImage?: string;
 }
 
-const DEFAULT_LAPTOP = "/images/dashboard/laptop.png";
-const DEFAULT_PHONE = "/images/dashboard/phone.png";
+const DEFAULT_DEVICES_WEBP = "/images/dashboard/devices.webp";
+const DEFAULT_DEVICES_PNG = "/images/dashboard/devices.png";
 
 function publicFileExists(publicPath: string): boolean {
-  const diskPath = fileURLToPath(new URL(`../../public${publicPath}`, import.meta.url));
+  // `import.meta.url`-relative resolution breaks under `astro build`: the
+  // component gets bundled into `dist/.prerender/chunks/*.mjs`, so
+  // `../../public` from there resolves inside `dist/` instead of the real
+  // project `public/`. `astro build`/`astro dev` both run with the project
+  // root as cwd, so resolve from there instead.
+  const diskPath = path.join(process.cwd(), "public", publicPath);
   return existsSync(diskPath);
 }
 
-const { laptopScreenshot, phoneScreenshot } = Astro.props;
+const { devicesImage } = Astro.props;
 
-const resolvedLaptop = laptopScreenshot ?? (publicFileExists(DEFAULT_LAPTOP) ? DEFAULT_LAPTOP : undefined);
-const resolvedPhone = phoneScreenshot ?? (publicFileExists(DEFAULT_PHONE) ? DEFAULT_PHONE : undefined);
+const resolvedDevices =
+  devicesImage ?? (publicFileExists(DEFAULT_DEVICES_PNG) ? DEFAULT_DEVICES_PNG : undefined);
+const hasWebp = !devicesImage && publicFileExists(DEFAULT_DEVICES_WEBP);
 ---
 
-<div class="relative">
-  <div class="w-full max-w-xl rounded-t-xl border-4 border-b-0 border-slate-700 bg-slate-900 p-2 shadow-2xl">
-    <div class="aspect-video overflow-hidden rounded-md bg-white">
-      {
-        resolvedLaptop ? (
-          <img
-            src={resolvedLaptop}
-            alt="Vista del dashboard de CLARVO en laptop"
-            class="h-full w-full object-cover"
-            width="1280"
-            height="720"
-            loading="lazy"
-          />
-        ) : (
-          <div class="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-300 text-sm text-slate-500">
-            Captura del dashboard pendiente
-          </div>
-        )
-      }
-    </div>
-  </div>
-  <div class="mx-auto h-3 w-full max-w-xl rounded-b-xl bg-slate-700"></div>
+<div class="stage">
+  <div class="composition">
+    <Crystal class="crystal pointer-events-none aspect-[1181/1201]" />
 
-  <div class="absolute -bottom-6 -right-4 w-28 rounded-2xl border-4 border-slate-700 bg-slate-900 p-1.5 shadow-2xl sm:-right-8 sm:w-32">
-    <div class="aspect-9/18 overflow-hidden rounded-lg bg-white">
-      {
-        resolvedPhone ? (
+    {
+      resolvedDevices ? (
+        <picture>
+          {hasWebp && <source srcset={DEFAULT_DEVICES_WEBP} type="image/webp" />}
           <img
-            src={resolvedPhone}
-            alt="Vista del dashboard de CLARVO en teléfono"
-            class="h-full w-full object-cover"
-            width="360"
-            height="760"
+            class="devices"
+            src={resolvedDevices}
+            alt="Vista preliminar del dashboard de CLARVO en laptop y teléfono"
+            width="1507"
+            height="1024"
             loading="lazy"
           />
-        ) : (
-          <div class="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-300 p-2 text-center text-xs text-slate-500">
-            Captura pendiente
-          </div>
-        )
-      }
-    </div>
+        </picture>
+      ) : (
+        <div class="devices screen-placeholder">Captura del dashboard pendiente</div>
+      )
+    }
   </div>
 </div>
+
+<style>
+  .stage {
+    position: relative;
+    padding: 4% 4% 2%;
+  }
+
+  .composition {
+    position: relative;
+    width: 100%;
+  }
+
+  .crystal {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 56%;
+    translate: -50% 0;
+    z-index: 1;
+    opacity: 0.98;
+    pointer-events: none;
+  }
+
+  .devices {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    margin-top: -46%;
+  }
+
+  .screen-placeholder {
+    display: flex;
+    aspect-ratio: 1507 / 1024;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #334066;
+    background: #0f1834;
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3c4;
+  }
+</style>

@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
-    "@emailjs/browser": "^4.4.1",
     "@lucide/astro": "^1.41.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.1",

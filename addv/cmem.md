@@ -284,3 +284,235 @@ vuelta cuando el usuario confirme una versión final de los tableros.
 final de tableros (recuperar capturas de `reference/`), dominio real,
 Measurement ID de GA4, diseño de `og:image`. Confirmación del usuario para
 avanzar a Segmento 5 (deploy).
+
+## 2026-09-05 — Segmento 1b: mockup hero girado sobre el cristal (laptop + teléfono)
+
+**Pedido:** usuario compartió `siteTemporal.png` y pidió el mockup hero fiel
+a esa imagen — laptop + teléfono en ángulo, superpuestos sobre el isotipo
+Crystal cubriendo su vértice, picos asomando arriba. Primero dijo usar "los
+mocks" (se entendió como las capturas reales guardadas en `reference/`);
+tras ver la propuesta corrigió explícitamente: usar el contenido que ya
+aparece dentro de la propia imagen `siteTemporal.png`, no sus capturas
+reales (esas se quedan sin tocar en `reference/`).
+
+**Análisis/crítica (protocolo completo antes de tocar código):** se generó
+un artifact HTML de comparación lado a lado (referencia recortada vs.
+propuesta CSS) usando las imágenes como data URIs, sin tocar el proyecto
+real todavía. Crítica explícita: la referencia es un render 3D fotográfico
+(aluminio, reflejos), un mockup CSS puro (`transform`/`opacity`, sin
+librería — regla fija del proyecto, skill `low-impact-motion`) se acerca
+mucho pero no es pixel-idéntico; alternativa (imagen compuesta única)
+descartada por perder responsividad y el flujo de "reemplaza el PNG y ya".
+Usuario aprobó el approach CSS y pidió implementar, corrigiendo el origen
+del contenido de pantalla (ver arriba).
+
+**Implementado:**
+- `DashboardMockup.astro` reescrito: absorbe `Crystal` internamente (antes
+  vivía suelto en `index.astro`) y arma el "stage" completo — laptop con
+  bisel/base metálica (`clip-path`) + pantalla a `aspect-ratio` exacto del
+  recorte real, teléfono rotado con notch superpuesto en el ángulo
+  inferior-derecho. `index.astro` simplificado a `<DashboardMockup />` solo.
+- Ajuste de posicionamiento (no trivial): el primer intento con
+  `padding-top` en `.rig` dejaba un hueco entre cristal y laptop sin
+  superponerse. Diagnosticado con capturas de pantalla reales (Edge headless
+  vía `msedge.exe --headless --screenshot`, porque la extensión de Chrome no
+  estaba conectada en esta sesión) — se corrigió a `margin-top: -46%` en
+  `.rig` para jalar el laptop dentro del área del cristal. Verificado
+  visualmente contra la referencia en desktop (1440px) y móvil (390px).
+- Contenido de pantalla: `public/images/dashboard/laptop.png` (544×398) y
+  `phone.png` (146×360) son recortes exactos de `siteTemporal.png` (medidos
+  por muestreo de píxeles de la imagen original 1536×1024), reemplazando el
+  placeholder "captura pendiente" que estaba activo desde el segmento
+  anterior. Las capturas reales del usuario en `reference/` quedan intactas,
+  sin usar.
+- Verificado: `npm test` (11/11), `astro build` sin errores, sin regresiones
+  visibles en el resto del hero/página.
+
+**Pendiente:** contenido de pantalla sigue siendo temporal (recorte de foto
+de referencia, no captura navegable real) — reemplazar cuando el usuario
+confirme los tableros definitivos.
+
+## 2026-09-05 (mismo día) — Corrección de recortes/ángulo + reemplazo waitlist por CTA WhatsApp
+
+**Pedido doble del usuario:** (1) el mockup se veía "mal cortado" — texto y
+tarjetas del teléfono cortados a la mitad, contenido inclinado dentro de un
+marco recto, laptop plano sin sensación de ángulo real; (2) cambiar el
+requerimiento de la waitlist por email: en vez de capturar correo, mandar al
+visitante a unirse a la comunidad de WhatsApp de CLARVO (link de invitación
+dado), cambiar el ícono de sobre por uno de WhatsApp manteniendo el mismo
+color, y que el botón tenga un pulso sutil para llamar la atención.
+
+**Fix de imágenes:** el teléfono venía de un recorte rectangular de la foto
+de referencia, pero el teléfono está fotografiado en ángulo (~6°) — un
+recorte recto de contenido rotado corta texto de forma impredecible ("RVO"
+en vez de "CLARVO"). Se re-recortó con margen, se enderezó con
+`PIL.Image.rotate(6)` (ángulo medido por muestreo de píxeles del bisel), y se
+recortó exacto a la pantalla ya derecha (nuevo `phone.png`, 135×362, sin
+rotación horneada — la inclinación visual la pone el CSS `rotate(9deg)`,
+sola, sin doble-inclinación). De paso se encontró un bug propio: un "notch"
+decorativo que yo había agregado (`.phone-screen::before`) tapaba la mitad
+del wordmark "CLARVO" real de la captura — eliminado, la captura ya trae su
+propio header. Para el laptop, el problema era que `rotateX(7deg)` no tenía
+`perspective` en ningún ancestro (se ve casi plano sin eso) — se agregó
+`perspective: 1400px` + se subió a `rotateX(15deg) rotateY(-4deg)
+rotate(-1deg)`, ahora con fuga real (trapecio), como foto en ángulo. Todo
+verificado con capturas de pantalla reales (Edge headless) en desktop y
+móvil, comparado contra la captura que mandó el usuario.
+
+**Reemplazo waitlist → comunidad WhatsApp:** decisión explícita del usuario,
+revierte el Segmento 3 (EmailJS) que estaba completo y probado. Eliminado
+`WaitlistForm.astro` + `src/lib/waitlist.ts` + `waitlist.test.ts` (11 tests) —
+vive en el historial de git si hace falta recuperarlo. Nuevo
+`CommunityCta.astro`: mismo layout de card, ícono de WhatsApp (SVG inline,
+mismo patrón que los íconos de marca de `Footer.astro`) con el mismo color
+que tenía el sobre, botón como `<a>` (no formulario) al link de invitación
+con `target="_blank" rel="noopener noreferrer"`, halo de pulso sutil
+alrededor del botón vía `opacity`/`transform:scale` (regla del proyecto,
+`low-impact-motion`), respeta `prefers-reduced-motion`. `@emailjs/browser`
+quedó en `package.json` sin usar — no se desinstaló sin confirmación aparte
+(regla del protocolo sobre quitar dependencias). Se agregó
+`vitest.config.ts` con `passWithNoTests: true` porque `npm test` empezó a
+fallar con "No test files found" al no quedar ningún test en el proyecto —
+documentado en vez de fabricar un test artificial.
+
+**Verificado:** `npm test` (exit 0, sin tests), `astro build` sin errores,
+capturas de pantalla reales confirmando ambos cambios en desktop y móvil.
+
+**Pendiente:** decidir si se desinstala `@emailjs/browser`; contenido de
+pantalla del mockup sigue temporal (recorte de referencia, no tablero real).
+
+## 2026-09-05 (mismo día) — Cambio de approach: recorte real de la imagen en vez de CSS, + ajustes finales
+
+**Pedido del usuario:** desinstalar `@emailjs/browser` (confirmado), centrar
+el botón, arreglar el texto "Simple. Poderoso. Tuyo." (no se distinguía), y
+sobre todo: el mockup CSS del laptop/teléfono "no queda bien... siguen
+viéndose los cortes" — pidió tomar literalmente el laptop+teléfono de
+`siteTemporal.png` (con las gráficas incluidas), quitarle solo el fondo, y
+usar eso en vez de la reconstrucción CSS. Pidió propuesta visual antes/después
+de nuevo (protocolo). Después, a media tarea, mandó el link nuevo del canal
+de WhatsApp (`https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o`,
+reemplaza el link de grupo anterior).
+
+**Diagnóstico de por qué "se veían los cortes":** no era el crop en sí (ya
+corregido en la ronda anterior) — era la perspectiva 3D CSS (`rotateX`/
+`rotateY` + `perspective`) que le había agregado para simular "foto en
+ángulo": el navegador tiene que re-samplear/interpolar el texto de la
+captura en ese ángulo, y a este tamaño se ve borroso, leyéndose como
+"cortado". Antes de llegar a la solución final se hizo una ronda intermedia
+(bajar la perspectiva a algo sutil) que ya mejoraba bastante, pero el
+usuario pidió ir más allá y directamente usar la foto real.
+
+**Solución final — recorte real con fondo quitado:**
+- Sin `scipy` disponible (sin acceso a red en el entorno) — implementado a
+  mano con `numpy`: flood-fill por conectividad de color desde los bordes
+  del recorte (no un umbral de color global), porque la barra lateral azul
+  marino de la app y el fondo del sitio son casi idénticos en color — un
+  umbral global se hubiera comido la barra lateral completa (pasó en el
+  primer intento). Fix: erosionar la máscara candidata (radio 8px) antes del
+  flood-fill y dilatarla de vuelta después, para no dejar que costuras de
+  1-2px de antialiasing entre el bisel negro y el fondo actúen como "puente"
+  y inunden el interior del laptop. Limpieza manual final de 2 fragmentos de
+  texto de marketing sueltos que quedaban dentro del recorte ("Poderoso.
+  Tuyo." y "Todo tu negocio..." de la imagen original — esos ya los pone el
+  sitio por su cuenta vía CSS, no debían venir horneados en la imagen).
+- Guardado como `public/images/dashboard/devices.png` (710×545 RGBA con
+  transparencia), reemplaza `laptop.png`/`phone.png` (borrados).
+- `DashboardMockup.astro` simplificado a lo mínimo: `Crystal` + una sola
+  `<img>`, sin bisel/base/marco dibujados a mano. Posicionamiento **medido
+  por píxeles**, no a ojo: bbox del cristal en `siteTemporal.png`
+  `x[666,1171] y[46,559]`, bbox del recorte de dispositivos
+  `x[770,1480] y[185,730]` → bbox combinado `x[666,1480] y[46,730]`, de ahí
+  salen los porcentajes exactos de `.crystal`/`.devices` en el componente.
+  Resultado: coincide con la referencia al pixel porque es literalmente la
+  misma foto — ya no hay fugas de recorte ni pérdida de nitidez.
+- Contra documentado (para el futuro): al ser una foto, actualizar el
+  contenido de pantalla requiere repetir recorte+quitado de fondo sobre la
+  imagen nueva, no se puede editar con código — aceptado por ser temporal
+  hasta que lleguen los tableros definitivos.
+
+**Otros ajustes del mismo pase:**
+- `@emailjs/browser` desinstalado (`npm uninstall`, confirmado).
+- Botón centrado (`flex justify-center`).
+- Texto "Simple. Poderoso. Tuyo." → blanco + semi-negrita + sombra de texto
+  (antes gris claro sobre el cristal brillante, ilegible).
+- Link de WhatsApp actualizado a canal (no grupo) — copy de
+  `CommunityCta.astro` ajustado para no prometer interacción bidireccional
+  que un canal (broadcast) no tiene: "Síguenos en WhatsApp" / "Seguir el
+  canal", ya no "conecta con otros emprendedores".
+
+**Verificado:** `npm test`, `astro build`, capturas de pantalla reales
+(desktop 1440px y móvil 390px) confirmando cada cambio contra la referencia.
+
+**Pendiente:** contenido de pantalla del mockup sigue temporal (recorte de
+`siteTemporal.png`, no un tablero navegable real) — reemplazar `devices.png`
+cuando lleguen los tableros definitivos, repitiendo el mismo proceso de
+recorte + quitado de fondo.
+
+## 2026-09-05 (mismo día) — Mockup definitivo del usuario + bug crítico de build encontrado
+
+El recorte de `siteTemporal.png` "no quedó bien" — el usuario pidió quitar
+el mockup entero y dejar solo el cristal de fondo (como al inicio del
+proyecto), y luego pasó **`ClarvoMock.png`**: mockup profesional ya armado
+(laptop+teléfono+gráficas+los 2 globos de texto horneados, fondo
+transparente real) pidiendo agregarlo optimizado.
+
+**Implementado:** recorte del margen transparente sobrante, guardado como
+`devices.png` (PNG fallback) + `devices.webp` (calidad 82, **176KB, 85%
+menos que el PNG**) — `<picture>` con WebP primero. Como el globo de texto
+ya viene horneado en la imagen, se quitaron los `<p class="caption">` de CSS
+(hubieran quedado duplicados). Posición del cristal detrás ajustada a ojo
+(esta imagen no viene de `siteTemporal.png`, no hay coordenadas que medir).
+
+**Bug crítico encontrado (no cosmético):** `publicFileExists()` resolvía la
+ruta con `import.meta.url` — funciona en `astro dev` pero en `astro build`
+el componente se empaqueta en `dist/.prerender/chunks/*.mjs`, así que
+`import.meta.url` apunta ahí y la ruta relativa resuelve dentro de `dist/`
+en vez de `public/` real. Confirmado con debug: `existsSync` daba `false`
+en build → el build de producción mostraba el placeholder "Captura
+pendiente", aunque `astro dev` se viera perfecto. **Este patrón se usó
+desde que se creó `DashboardMockup.astro` — es posible que los mockups
+anteriores nunca se hayan visto en un build de producción real**, solo en
+dev, porque las verificaciones previas solo comprobaban que `astro build`
+no tronara sin inspeccionar el HTML de salida.
+
+**Fix:** `path.join(process.cwd(), "public", publicPath)` en vez de
+`import.meta.url` — `process.cwd()` es la raíz del proyecto en ambos modos.
+Verificado inspeccionando el HTML real de `dist/` (ya no aparece
+`screen-placeholder`, sí aparece `src="/images/dashboard/devices.png"`).
+
+**Lección aplicada:** de ahora en más, cualquier componente con fallback
+condicional se verifica inspeccionando el output real del build, no solo
+el exit code.
+
+## 2026-09-05 (mismo día) — Segmento 5: deploy a GitHub Pages, dominio clarvo.mx
+
+**Pedido:** desplegar a GitHub Pages, usuario dijo "ya está configurado el
+actions", dio el dominio `clarvo.mx`, pidió solicitar certificados y pasar a
+producción.
+
+**Hallazgo (contradice al usuario, se avisó en vez de asumir):**
+`git ls-remote origin` vacío — el repo remoto nunca tuvo un commit, no
+existía `.github/workflows/` ni local ni remoto. El Actions no estaba
+configurado, a pesar de lo que creía el usuario.
+
+**Implementado:** `.github/workflows/deploy.yml` (solo acciones oficiales
+de primera parte — `checkout`, `setup-node`, `configure-pages`,
+`upload-pages-artifact`, `deploy-pages` — nada de terceros sin auditar) que
+corre `npm ci && npm test && npm run build` y despliega `dist/` en cada
+push a `main`. `public/CNAME` con `clarvo.mx`. `astro.config.mjs`: dominio
+real reemplaza el placeholder `clarvo.example`. Verificado con build real
+que canonical/og:url/robots.txt/sitemap ya apuntan a `https://clarvo.mx` y
+`dist/CNAME` se copia bien.
+
+**Lo que NO se hizo desde aquí (fuera del repo, sin herramienta para
+tocarlo — no hay `gh` CLI en este entorno):**
+1. DNS de `clarvo.mx` en el registrador — necesita registros A a las 4 IPs
+   de GitHub Pages (`185.199.108/109/110/111.153`), documentado en
+   `project_state.md` con el detalle completo.
+2. GitHub → Settings → Pages → campo "Custom domain" = `clarvo.mx` +
+   esperar el check de DNS + activar "Enforce HTTPS" — así es como GitHub
+   realmente "solicita" el certificado (Let's Encrypt automático en cuanto
+   el DNS resuelve), no es una acción aparte que se pueda disparar antes.
+
+**Pendiente:** que el usuario haga esos 2 pasos manuales — sin eso el sitio
+solo sirve en la URL default de Pages, no en `clarvo.mx`.

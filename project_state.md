@@ -27,67 +27,88 @@ sin base de datos.
 - Favicon real generado desde el PNG de marca: `favicon.ico` (16/32/48),
   `favicon-32.png`, `apple-touch-icon.png` (180×180). Reemplaza el default
   genérico de Astro.
-- Envío de correo de la waitlist: **EmailJS, ya implementado** (Segmento 3
-  completo). Ver sección propia abajo.
-- **Capturas del dashboard: el usuario dio 2 capturas reales pero luego pidió
-  NO usarlas todavía** ("tómalas como mockups, no uses mis capturas") — se
-  movieron a `public/images/dashboard/reference/` (preservadas, no borradas,
-  pero `DashboardMockup.astro` no las recoge desde ahí). El sitio muestra el
-  placeholder "Captura pendiente" a propósito. Mover un archivo de vuelta a
-  `public/images/dashboard/` (nombre `laptop.png`/`phone.png`) cuando el
-  usuario confirme una versión final de los tableros.
+- **Waitlist por email (EmailJS) reemplazada por CTA a comunidad de WhatsApp**
+  (2026-09-05, ver sección propia abajo) — decisión explícita del usuario,
+  revierte el Segmento 3 anterior.
+- **Capturas del dashboard: el usuario dio 2 capturas reales pero pidió NO
+  usarlas** ("tómalas como mockups, no uses mis capturas") — preservadas sin
+  usar en `public/images/dashboard/reference/`. El mockup hero actual usa
+  `public/images/dashboard/devices.png` (recorte real de `siteTemporal.png`
+  con el fondo quitado, ver Segmento 1b). Reemplazar ese archivo (mismo
+  proceso: recortar + quitar fondo) cuando el usuario confirme una versión
+  final navegable de los tableros.
 - Repo: `addv-sites/clarvo-tempSite.git`, clonado en `D:\srv\clarvo-tempSite`
   (carpeta hermana de `D:\srv\clarvo`, repo git independiente).
 - No hizo falta `imagenes.md`/prompt de ChatGPT — todos los assets necesarios
   llegaron directo del usuario (logos, favicon) o se resolvieron con librería
   de iconos (Lucide) / SVG a mano (iconos sociales, bandera MX).
 
-## Segmento 3 — Waitlist + EmailJS (completo)
-- `src/lib/waitlist.ts`: lógica pura testeable — `isEmailJsConfigured`,
-  `isValidEmail`, `validateWaitlistSubmission` (valida email + honeypot
-  anti-spam).
-- `src/lib/waitlist.test.ts`: **11 pruebas unitarias, todas pasan.** Comando:
-  `npm test` (Vitest).
-- `WaitlistForm.astro`: form con campo honeypot oculto (anti-spam sin backend),
-  estados de carga/éxito/error con `aria-live`, deshabilita el submit y
-  muestra "La lista de espera todavía no está activa" si faltan credenciales
-  EmailJS — **verificado en navegador real**: sin `.env` configurado, el form
-  se deshabilita correctamente, cero errores de consola.
-- Credenciales (`PUBLIC_EMAILJS_SERVICE_ID`, `PUBLIC_EMAILJS_TEMPLATE_ID`,
-  `PUBLIC_EMAILJS_PUBLIC_KEY`) vía `.env`, documentadas en `.env.example`.
-  **Pendiente real**: el usuario todavía no ha dado estas credenciales — el
-  envío de correo real (end-to-end) no se ha podido probar todavía, solo el
-  comportamiento "sin configurar". Falta esa verificación final cuando lleguen
-  los datos de EmailJS/Gmail y el correo destino de notificaciones.
+## Segmento 3 — Waitlist + EmailJS (histórico, reemplazado 2026-09-05)
+Este segmento se dio por completo (`WaitlistForm.astro` + `src/lib/waitlist.ts`
++ 11 tests unitarios + integración EmailJS end-to-end pendiente solo de
+credenciales) pero el usuario **cambió el requerimiento**: en vez de capturar
+el correo para una waitlist, quiere mandar al visitante a unirse directo a la
+comunidad de WhatsApp de CLARVO. Código eliminado (vive en el historial de
+git si hace falta recuperarlo): `src/components/WaitlistForm.astro`,
+`src/lib/waitlist.ts`, `src/lib/waitlist.test.ts`. `.env.example` ya no
+documenta las 3 variables `PUBLIC_EMAILJS_*`. La dependencia `@emailjs/browser`
+**se dejó en `package.json` sin usar** — no se desinstaló sin confirmación
+explícita (regla del protocolo: quitar dependencias es una acción que hay que
+confirmar aparte). Ver "Segmento 3b" abajo para el reemplazo.
+
+## Segmento 3b — CTA "Únete a la comunidad" (WhatsApp) (2026-09-05)
+- `src/components/CommunityCta.astro` (nuevo, reemplaza `WaitlistForm.astro`
+  en `index.astro`): mismo layout de card que antes (ícono en círculo +
+  título + descripción + botón), pero:
+  - Ícono: WhatsApp (SVG inline, mismo patrón que los íconos de marca de
+    `Footer.astro` — Lucide no trae íconos de marca) — **mismo color que el
+    sobre anterior** (`bg-brand-cyan/15 text-brand-cyan`), tal como pidió el
+    usuario.
+  - Botón ("Unirme a la comunidad") es un `<a>` al link de invitación de
+    WhatsApp (`target="_blank" rel="noopener noreferrer"` — seguridad básica
+    contra reverse tabnabbing), no un formulario. Link de invitación es
+    público (no es un secreto), se hardcodea directo en el componente.
+  - **Halo de pulso sutil** alrededor del botón para llamar la atención,
+    pedido explícito del usuario ("que dé flashazos, sutiles pero que se
+    noten") — implementado con `opacity`/`transform: scale` solamente (regla
+    fija del proyecto, ver `low-impact-motion`), respeta
+    `prefers-reduced-motion` (sin animación, halo oculto).
+- Sin lógica de validación/estado que testear (no hay input de usuario) — la
+  verificación fue funcional: build real + captura de pantalla en navegador
+  confirmando el link, el ícono y el halo.
+- `vitest.config.ts` (nuevo): `test.passWithNoTests: true` — sin esto, `npm
+  test` fallaba con "No test files found" al quedar el proyecto sin ningún
+  archivo de test tras borrar `waitlist.test.ts`. Documentado explícitamente
+  en vez de fabricar un test artificial solo para tener uno.
 
 ## Plan segmentado
 | # | Segmento | Estado |
 |---|---|---|
 | 0 | Setup: clonar repo, scaffold Astro + Tailwind, estructura de carpetas | **Hecho** |
-| 1 | Maqueta estática fiel a la imagen (hero, wordmark, waitlist card, 5 features, footer) | **Hecho** — wordmark ahora es imagen real (ver arriba); dashboard vuelve a placeholder a propósito |
+| 1 | Maqueta estática fiel a la imagen (hero, wordmark, waitlist card, 5 features, footer) | **Hecho** — wordmark ahora es imagen real (ver arriba); mockup del dashboard (laptop+teléfono girados, cubriendo el cristal) implementado, ver sección propia abajo |
 | 2 | Isotipo + animación de luz | **Hecho, rehecho con asset real** (ver arriba) — más fiel que la v1 con SVG a mano |
-| 3 | Waitlist funcional + integración EmailJS | **Hecho** (código completo, 11 tests unitarios) — falta probar envío real con credenciales reales |
+| 3 | ~~Waitlist funcional + integración EmailJS~~ → CTA comunidad WhatsApp | **Reemplazado** (2026-09-05) — ver Segmento 3b, requerimiento cambió por decisión del usuario |
 | 4 | SEO + Analytics (meta tags, JSON-LD, sitemap.xml, robots.txt, GA4, Search Console) | **Hecho** (parcial, ver pendientes) |
-| 5 | Deploy GitHub Actions → GitHub Pages + pruebas Lighthouse/PageSpeed + accesibilidad + smoke test real | Pendiente |
+| 5 | Deploy GitHub Actions → GitHub Pages | **Código listo, esperando pasos manuales del usuario** (ver Segmento 5 abajo) |
 
 ## Pendiente de confirmar/recibir del usuario
-- Credenciales EmailJS/Gmail + correo destino de notificaciones — para probar
-  el envío real (Segmento 3 está implementado pero no probado end-to-end).
-- Versión final de los tableros (dashboard) para volver a colocar capturas
-  reales en `public/images/dashboard/` (ahora mismo solo hay referencia en
-  `public/images/dashboard/reference/`).
-- **Dominio real de producción** — confirmado que será dominio propio, falta
-  el valor exacto. Todo usa el placeholder `https://clarvo.example` (TLD
-  reservado, RFC 2606) vía `PUBLIC_SITE_URL` en `.env`. Bloquea `public/CNAME`
-  (Segmento 5) y las URLs finales de sitemap/canonical/OG.
+- Versión final de los tableros (dashboard) — el mockup hero ya usa
+  `ClarvoMock.png` (dado por el usuario, ver Segmento 1d), pero sigue siendo
+  un mockup, no un tablero navegable real. Cuando el usuario confirme una
+  versión final, reemplazar `public/images/dashboard/devices.png`/`.webp`.
+- **3 pasos manuales para terminar el deploy — no ejecutables desde aquí**
+  (sin `gh` CLI instalado en este entorno, y de todas formas viven fuera del
+  repo — DNS del registrador, Settings de GitHub): ver Segmento 5 abajo,
+  sección "Lo que falta y por qué no lo hice yo".
 - Measurement ID de GA4 (`PUBLIC_GA_MEASUREMENT_ID`) — sin esto no se inyecta
-  nada (confirmado, no rompe), pero tampoco hay analítica activa.
-- Verificación de Google Search Console — pendiente para Segmento 5 junto con
-  el dominio real.
+  nada (confirmado, no rompe), pero tampoco hay analítica activa. El
+  workflow de deploy ya lo lee de una variable de repo (`vars.PUBLIC_GA_MEASUREMENT_ID`)
+  si se agrega en Settings → Secrets and variables → Actions → Variables.
+- Verificación de Google Search Console — no bloqueante para salir a
+  producción, se puede hacer después.
 - Decisión pendiente (no bloqueante): diseño de `og:image` — el logo
   transparente solo no sirve como preview social, necesitaría una tarjeta
   completa (logo + fondo + texto).
-- Confirmación explícita para avanzar a Segmento 5 (protocolo addv-web-app).
 
 ## Estructura de assets
 - `public/images/logo/`: `logo-on-dark.png/.webp` (usado en el hero/footer,
@@ -95,11 +116,275 @@ sin base de datos.
   `favicon-source.png` (original 1254×1254 sin recortar, de donde salen
   favicon + `crystal-mark.png`), `crystal-mark.png` (recorte ajustado usado
   por `Crystal.astro`).
-- `public/images/dashboard/`: vacío de capturas a propósito (placeholder
-  activo). `reference/laptop.png` y `reference/phone.png` — capturas reales
-  que el usuario dio, preservadas pero no mostradas en el sitio todavía. Ver
-  el `README.md` de esa carpeta para cómo "publicarlas" cuando toque.
+- `public/images/dashboard/`: `devices.png` **activo** — recorte real de
+  laptop+teléfono de `siteTemporal.png` con el fondo quitado (pantalla
+  "Inicio" de la foto de referencia), no las capturas reales del usuario.
+  `reference/laptop.png` y `reference/phone.png` — capturas reales que el
+  usuario dio, preservadas pero sin usar (el usuario pidió explícitamente no
+  usarlas como contenido del mockup). Ver el `README.md` de esa carpeta para
+  el detalle y cómo reemplazar cuando llegue la versión final.
 - README.md en cada carpeta con la convención de nombres.
+
+## Segmento 1b — Mockup hero (laptop + teléfono girados sobre el cristal) (2026-09-05)
+
+**Pedido:** el usuario compartió `siteTemporal.png` (mockup de referencia
+completo, guardado en la raíz del repo) y pidió que el hero fuera fiel a esa
+imagen: laptop + teléfono en ángulo, superpuestos sobre el isotipo Crystal
+tapando su vértice (los 2 picos del isotipo asoman arriba, flanqueando el
+laptop), usando temporalmente los mocks disponibles — luego corrigió que
+"los mocks" significa el contenido que ya aparece dentro de la propia imagen
+`siteTemporal.png`, no las capturas reales que el usuario había dado antes
+(esas se quedan sin usar en `reference/`).
+
+**Análisis/crítica (protocolo, antes de implementar):** se armó un artifact
+de comparación lado a lado (referencia vs. propuesta) antes de tocar código,
+señalando explícitamente que un mockup CSS (`transform`/`opacity` puro, sin
+librería — regla fija del proyecto) se acerca al render 3D fotográfico de la
+referencia pero no es pixel-idéntico; alternativa descartada (imagen
+compuesta única) por perder responsividad y el flujo actual de "reemplaza el
+PNG y ya" cuando lleguen tableros reales. Usuario aprobó el approach CSS.
+
+**Implementado:**
+- `DashboardMockup.astro` reescrito completo: ya no es un rectángulo plano.
+  Ahora renders `Crystal` internamente (antes vivía en `index.astro`) y arma
+  un "stage" con laptop (bisel + base metálica con `clip-path`, pantalla con
+  `aspect-ratio` exacto al recorte real) y teléfono (rotado, notch, superpuesto
+  al ángulo inferior-derecho del laptop) — todo con `transform`/`opacity`
+  solamente. `index.astro` simplificado a solo `<DashboardMockup />`.
+- **Ajuste de posicionamiento no trivial:** el primer intento (rig con
+  `padding-top: 19%`) dejaba un hueco grande entre el cristal y el laptop en
+  vez de superponerlos — el laptop no llegaba a cubrir el vértice. Diagnóstico
+  con capturas de pantalla reales (Edge headless, sin extensión de Chrome
+  conectada en esta sesión) confirmó que hacía falta **superposición fuerte**,
+  no solo padding pequeño: se cambió a `margin-top: -46%` en `.rig` (jala el
+  laptop hacia arriba, dentro del área del cristal) + `stage` con padding-top
+  reducido a 2%. Verificado visualmente contra la referencia — muy cercano
+  (picos asomando arriba, vértice tapado, teléfono en el ángulo correcto).
+- **Contenido de pantalla:** `public/images/dashboard/laptop.png` (544×398) y
+  `phone.png` (146×360) son recortes exactos de `siteTemporal.png` (coords
+  medidas por muestreo de píxeles: laptop `(808,214)-(1352,612)`, teléfono
+  `(1308,318)-(1454,678)` en la imagen original 1536×1024) — no las capturas
+  reales del usuario. Ver detalle en `public/images/dashboard/README.md`.
+- Verificado: `npm test` (11/11 pasan, sin relación directa pero confirma que
+  nada se rompió), `astro build` completa sin errores, capturas de pantalla
+  reales en desktop (1440px) y móvil (390px) confirmando que el mockup escala
+  bien y sigue superpuesto correctamente en ambos breakpoints.
+
+### Corrección 2026-09-05 (mismo día): recortes se veían mal cortados, laptop se veía plano
+
+El usuario marcó dos problemas con captura real en mano: (1) el teléfono
+mostraba texto/tarjetas cortadas a la mitad ("RVO" en vez de "CLARVO",
+"nventario" sin la "I") y contenido visiblemente inclinado dentro de un marco
+recto; (2) el laptop se veía como una imagen plana pegada, no como algo
+fotografiado en ángulo.
+
+**Causa raíz (teléfono):** el recorte original venía directo de la foto de
+referencia, donde el teléfono está fotografiado en ángulo (~6° rotado) — un
+recorte rectangular de contenido rotado, puesto dentro de un marco CSS recto,
+corta contenido de forma impredecible y no alinea con el marco.
+
+**Fix:** recorte generoso del teléfono en `siteTemporal.png`, enderezado con
+`PIL.Image.rotate(6°)` (medido por muestreo de píxeles del borde del bisel en
+varias filas) y luego recortado exacto a la pantalla ya derecha — nuevo
+`phone.png` es 135×362, sin rotación horneada, contenido completo (wordmark
+"CLARVO" entero, las 4 tarjetas completas). La rotación visual del teléfono
+en el sitio ahora la pone el CSS (`transform: rotate(9deg)` en `.phone`, sin
+tocar), consistente y sin doble-inclinación.
+
+**Fix (laptop, "se ve plano"):** el `rotateX(7deg)` original no tenía
+`perspective` en ningún ancestro — sin eso, una rotación 3D en CSS se ve casi
+sin profundidad (proyección ortográfica). Se agregó `perspective: 1400px` en
+`.rig` y se subió la transformación a `rotateX(15deg) rotateY(-4deg)
+rotate(-1deg)` en `.laptop-body` — ahora el lado derecho de la pantalla se ve
+en fuga real (trapecio), como una foto en ángulo, no un rectángulo plano.
+
+**Bug propio encontrado en el camino:** el "notch" falso del teléfono
+(`.phone-screen::before`, un círculo decorativo que yo había agregado para
+simular cámara frontal) tapaba la mitad del wordmark "CLARVO" real de la
+captura — la captura ya trae su propio header de teléfono, el notch de
+adorno sobraba. Eliminado.
+
+Verificado con capturas de pantalla reales (desktop y móvil) tras cada
+cambio — confirmado visualmente contra la imagen que mandó el usuario, sin
+texto ni tarjetas cortadas, laptop con profundidad real.
+
+**Pendiente:** contenido de pantalla sigue siendo temporal (recorte de la
+imagen de referencia, no una captura navegable real) — reemplazar
+`devices.png` (ver Segmento 1c) cuando el usuario confirme los tableros
+definitivos.
+
+## Segmento 1c — Mockup hero: recorte real de la imagen en vez de CSS a mano (2026-09-05, mismo día)
+
+Ni el approach CSS-plano ni el CSS-con-perspectiva-3D del Segmento 1b
+convencieron al usuario ("no queda bien... siguen viéndose los cortes"). El
+usuario pidió un cambio de approach completo: en vez de reconstruir el
+laptop/teléfono con `div`s + CSS, **tomar literalmente el laptop+teléfono de
+`siteTemporal.png` (con todo y las gráficas) y quitarle solo el fondo**.
+
+**Implementado:**
+- Recorte de `siteTemporal.png` región `(770,185)-(1480,730)` (imagen
+  original 1536×1024) con laptop+teléfono completos.
+- Fondo quitado con **flood-fill por conectividad de color desde los bordes**
+  (no un umbral de color global) — necesario porque la barra lateral de la
+  app (azul marino) y el fondo del sitio son casi el mismo color; un umbral
+  global se hubiera comido la barra lateral. Se usó erosión+flood-fill+dilate
+  (radio 8px) para evitar fugas por costuras de 1-2px de antialiasing entre
+  el bisel negro y el fondo. Limpieza manual de 2 fragmentos de texto de
+  marketing sueltos dentro del recorte ("Simple. Poderoso. Tuyo." y "Todo tu
+  negocio..." de la imagen original, que el sitio ya pone por su cuenta).
+  Sin `scipy` disponible (sin red en el entorno) — implementado a mano con
+  `numpy` (dilatación/erosión binaria por desplazamiento de arrays).
+- Guardado como `public/images/dashboard/devices.png` (710×545, RGBA con
+  transparencia). `laptop.png`/`phone.png` de la versión anterior, borrados.
+- `DashboardMockup.astro` simplificado drásticamente: ya no hay bisel/base
+  dibujados a mano ni contenedores de pantalla — solo `Crystal` + una
+  `<img>` (`devices.png`), ambos posicionados con porcentajes **medidos por
+  píxeles** en `siteTemporal.png` (bbox del cristal `x[666,1171] y[46,559]`,
+  bbox del recorte `x[770,1480] y[185,730]` → bbox combinado
+  `x[666,1480] y[46,730]`), no ajustados a ojo. Detalle completo del cálculo
+  en el comentario del `<style>` del componente y en el `README.md` de
+  `public/images/dashboard/`.
+- Resultado: coincide visualmente con la referencia al pixel (es la misma
+  foto), sin las fugas de recorte/legibilidad que tenía el approach CSS.
+- **Contra documentado:** al ser una foto, cambiar el contenido de las
+  pantallas requiere repetir recorte+quitado de fondo sobre la imagen nueva,
+  no se puede editar con código — aceptado por ser temporal.
+
+**También en este mismo pase:**
+- `@emailjs/browser` desinstalado (`npm uninstall`, confirmado explícito del
+  usuario) — ya no queda dependencia sin usar.
+- Botón "Seguir el canal" (antes "Unirme a la comunidad") centrado
+  (`flex justify-center`) en vez de alineado a la izquierda.
+- Texto "Simple. Poderoso. Tuyo." con bajo contraste sobre el cristal —
+  cambiado a blanco + semi-negrita + sombra de texto.
+- **Link de WhatsApp cambiado de grupo a canal** (`https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o`,
+  dado directamente por el usuario) — un canal de WhatsApp es de difusión
+  unidireccional (broadcast), no un chat grupal donde los miembros
+  interactúan entre sí. Copy del `CommunityCta.astro` ajustado para
+  reflejar eso con precisión: "Síguenos en WhatsApp" / "Entérate de las
+  novedades... directo en nuestro canal" / botón "Seguir el canal" — antes
+  decía "conecta con otros emprendedores", que ya no aplica a un canal.
+- Verificado: `npm test`, `astro build`, capturas de pantalla reales
+  (desktop y móvil) confirmando todos los cambios.
+
+## Segmento 1d — Mockup definitivo del usuario (`ClarvoMock.png`) + bug de build crítico encontrado (2026-09-05, mismo día)
+
+El recorte de `siteTemporal.png` del Segmento 1c "no quedó bien" — el usuario
+pidió quitar el mockup por completo y dejar solo el cristal de fondo (como
+al principio del proyecto). Luego pasó **`ClarvoMock.png`**: un mockup
+profesional ya armado (laptop + teléfono + gráficas + **los dos globos de
+texto ya horneados** — "Simple. Poderoso. Tuyo." / "Todo tu negocio en la
+palma de tu mano" — con fondo transparente real, no hubo que quitarlo a
+mano) y pidió agregarlo optimizado para carga rápida.
+
+**Implementado:**
+- Recorte del margen transparente sobrante (`Image.getbbox()`), 1535×1024 →
+  1507×1024. Guardado como `public/images/dashboard/devices.png` (PNG
+  fallback, 1.2MB) + `public/images/dashboard/devices.webp` (calidad 82,
+  **176KB — 85% menos que el PNG**). `DashboardMockup.astro` ahora sirve
+  `<picture>` con el WebP como fuente primaria y el PNG como fallback (mismo
+  patrón que `logo-on-dark.webp`/`.png`).
+- Como esta imagen ya trae los globos de texto horneados, se quitaron los
+  `<p class="caption">` de CSS del componente (habrían quedado duplicados).
+- Posicionamiento del cristal detrás del mockup **ajustado a ojo** (no medido
+  por píxeles como en el Segmento 1c) — esta imagen no viene de
+  `siteTemporal.png`, no hay correspondencia de coordenadas que medir.
+  Verificado visualmente contra varias iteraciones de captura de pantalla.
+
+**Bug crítico encontrado (no cosmético — afectaba producción):**
+`publicFileExists()` resolvía la ruta del archivo con
+`fileURLToPath(new URL("../../public" + publicPath, import.meta.url))`. En
+`astro dev` esto apunta al archivo fuente real y funciona. **En `astro
+build`, el componente se empaqueta dentro de `dist/.prerender/chunks/*.mjs`
+— `import.meta.url` apunta ahí, y `../../public` resuelve dentro de `dist/`
+en vez de la carpeta `public/` real del proyecto.** Confirmado con debug
+directo: `diskPath` resolvía a `dist\public\images\dashboard\devices.png`
+(no existe) → `existsSync` devolvía `false` → el build de producción
+mostraba el placeholder "Captura pendiente" en vez de la imagen, **aunque el
+`astro dev` local se viera perfecto**. Este mismo patrón se usó desde que se
+creó `DashboardMockup.astro` (Segmentos 1b/1c) — es decir, **es posible que
+los mockups anteriores nunca se hayan visto en un build de producción real**,
+solo en dev. No se había detectado porque las verificaciones anteriores solo
+comprobaban que `astro build` no tronara, sin inspeccionar el HTML de salida
+para confirmar que la imagen (no el placeholder) quedara en el output.
+
+**Fix:** resolver con `path.join(process.cwd(), "public", publicPath)` en
+vez de `import.meta.url` — `process.cwd()` es la raíz del proyecto tanto en
+`astro dev` como en `astro build`. Verificado con debug (`cwdExists: true`
+en build) y luego confirmado en el HTML de salida real
+(`grep 'src="/images/dashboard/devices.png"' dist/index.html` — ya no
+aparece `screen-placeholder`).
+
+**Lección para futuras verificaciones:** "el build no truena" no es lo
+mismo que "el build muestra lo correcto" — a partir de ahora, cualquier
+componente con fallback condicional (`existsSync`, feature flags, etc.) se
+verifica inspeccionando el HTML/output real del build, no solo el exit code.
+
+## Segmento 5 — Deploy a GitHub Pages, dominio `clarvo.mx` (2026-09-05)
+
+**Pedido:** el usuario pidió desplegar a GitHub Pages, dijo "ya está
+configurado el actions" y dio el dominio `clarvo.mx`, pidiendo solicitar los
+certificados y dar pase a producción.
+
+**Hallazgo importante (contradice lo que creía el usuario):**
+`git ls-remote origin` devolvió **vacío** — el repo remoto
+(`addv-sites/clarvo-tempSite`) no tiene ni un solo commit todavía, nunca se
+ha hecho push. No existía `.github/workflows/` ni localmente ni (por
+definición, dado que el remoto está vacío) en GitHub — el Actions **no**
+estaba configurado. Se avisó explícitamente en vez de asumir que sí estaba
+y seguir de largo.
+
+**Implementado (todo lo que sí se puede hacer desde el repo):**
+- `.github/workflows/deploy.yml` — workflow estándar de GitHub (acciones
+  oficiales `actions/checkout`, `actions/setup-node`,
+  `actions/configure-pages`, `actions/upload-pages-artifact`,
+  `actions/deploy-pages` — nada de terceros/comunidad, todas de primera
+  parte, ya auditadas por GitHub). Corre en cada push a `main` (+
+  `workflow_dispatch` manual): `npm ci` → `npm test` → `npm run build` →
+  sube `dist/` → despliega a Pages. `PUBLIC_SITE_URL` fijo a
+  `https://clarvo.mx` en el paso de build; `PUBLIC_GA_MEASUREMENT_ID` lee de
+  `vars.PUBLIC_GA_MEASUREMENT_ID` (variable de repo, vacía por ahora — no
+  rompe, solo no manda analítica hasta que se configure).
+- `public/CNAME` con `clarvo.mx` — Astro lo copia tal cual a `dist/CNAME`
+  (verificado).
+- `astro.config.mjs`: el dominio real (`https://clarvo.mx`) reemplaza el
+  placeholder `clarvo.example` (RFC 2606) como default — sigue
+  overrideable vía `PUBLIC_SITE_URL` en `.env` para builds locales contra
+  otro dominio.
+- Verificado con build real: `canonical`, `og:url`, `robots.txt` y
+  `sitemap-index.xml` todos apuntando a `https://clarvo.mx` correctamente;
+  `dist/CNAME` presente con el contenido correcto.
+
+**Lo que falta y por qué no lo hice yo:** 3 pasos que viven fuera del repo
+git — no hay `gh` CLI instalado en este entorno (verificado, ni en Bash ni
+en PowerShell) para tocarlos vía API, y aunque lo hubiera, dos de los tres
+dependen de acceso al registrador del dominio o al panel de GitHub que solo
+tiene el usuario:
+1. **Push inicial** — hecho por mí en este mismo segmento (primer push real
+   del repo, autorización explícita del usuario: "despliegas... damos pase
+   a producción").
+2. **DNS de `clarvo.mx` en el registrador** (GoDaddy, Namecheap, el que
+   sea) — apex domain, necesita registros **A** apuntando a las 4 IPs de
+   GitHub Pages: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`,
+   `185.199.111.153` (y opcionalmente **AAAA** para IPv6:
+   `2606:50c0:8000::153`, `:8001::153`, `:8002::153`, `:8003::153`). Si
+   además quiere `www.clarvo.mx`, ese sí puede ser un registro **CNAME**
+   apuntando a `addv-sites.github.io.`
+3. **GitHub → repo → Settings → Pages**: source = "GitHub Actions" (se
+   configura solo la primera vez que corre el workflow, pero conviene
+   confirmarlo); campo "Custom domain" = `clarvo.mx`; esperar a que el
+   check de DNS pase (puede tardar minutos a horas después de que el DNS
+   propague); ahí aparece el checkbox **"Enforce HTTPS"** — eso es
+   literalmente "solicitar el certificado": GitHub aprovisiona el
+   certificado de Let's Encrypt automáticamente en cuanto el DNS resuelve
+   correctamente, no es una acción separada que se pueda disparar antes de
+   que el DNS esté en su lugar.
+
+**Pendiente:** que el usuario configure el DNS (paso 2) y confirme/ajuste
+Settings → Pages (paso 3) — sin eso, el sitio no será alcanzable en
+`https://clarvo.mx` aunque el workflow corra exitosamente (correría, pero
+solo publicaría en `https://addv-sites.github.io/clarvo-tempSite/`, la URL
+default de Pages, hasta que el dominio custom quede activo).
 
 ## Notas técnicas
 - `astro add tailwind` y `astro add sitemap` **fallan instalando dependencias

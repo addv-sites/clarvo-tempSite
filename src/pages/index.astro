@@ -1,12 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Logo from "../components/Logo.astro";
-import WaitlistForm from "../components/WaitlistForm.astro";
+import CommunityCta from "../components/CommunityCta.astro";
 import FeatureIcons from "../components/FeatureIcons.astro";
-import Crystal from "../components/Crystal.astro";
 import DashboardMockup from "../components/DashboardMockup.astro";
 import Footer from "../components/Footer.astro";
-import { Quote, ArrowDownRight, ArrowUpRight } from "@lucide/astro";
+import { Quote } from "@lucide/astro";
 ---
 
 <Layout
@@ -38,25 +37,13 @@ import { Quote, ArrowDownRight, ArrowUpRight } from "@lucide/astro";
         </p>
 
         <div class="mt-8">
-          <WaitlistForm />
+          <CommunityCta />
         </div>
       </div>
 
       <div class="relative flex justify-center lg:justify-end">
-        <div class="relative mt-8 w-full max-w-xl">
-          <Crystal
-            class="pointer-events-none absolute inset-x-0 -top-10 mx-auto aspect-[1181/1201] w-4/5 opacity-95"
-          />
-
-          <p class="relative mb-3 flex items-center justify-end gap-1 text-right text-sm italic text-slate-400">
-            Simple. Poderoso. Tuyo.
-            <ArrowDownRight class="h-4 w-4 shrink-0" />
-          </p>
+        <div class="w-full max-w-xl">
           <DashboardMockup />
-          <p class="mt-10 flex items-center justify-center gap-1 text-sm italic text-slate-400 sm:justify-end">
-            Todo tu negocio en la palma de tu mano
-            <ArrowUpRight class="h-4 w-4 shrink-0" />
-          </p>
         </div>
       </div>
     </div>

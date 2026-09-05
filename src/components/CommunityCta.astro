@@ -1,0 +1,69 @@
+---
+const WHATSAPP_INVITE_URL = "https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o";
+---
+
+<div class="rounded-2xl border border-brand-border bg-brand-card/60 p-6 backdrop-blur-sm">
+  <div class="flex items-start gap-4">
+    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-cyan/15 text-brand-cyan">
+      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="currentColor" aria-hidden="true">
+        <path
+          d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.2 4.79 1.2h.004c5.46 0 9.9-4.44 9.9-9.9 0-2.64-1.03-5.12-2.9-6.99A9.82 9.82 0 0 0 12.04 2Zm0 1.67c2.19 0 4.25.85 5.8 2.4a8.15 8.15 0 0 1 2.4 5.83c0 4.54-3.7 8.23-8.23 8.23a8.2 8.2 0 0 1-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.25-4.37c0-4.54 3.7-8.23 8.23-8.23Zm-4.55 4.6c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.6 4.13 3.64.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.47-.28-.25-.13-1.44-.71-1.66-.79-.22-.08-.39-.13-.55.13-.16.25-.63.79-.78.95-.14.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.41.08-.16.04-.31-.02-.44-.06-.13-.55-1.36-.76-1.86-.2-.48-.4-.42-.55-.42Z"
+        />
+      </svg>
+    </span>
+    <div>
+      <p class="text-lg font-semibold text-white">Síguenos en WhatsApp</p>
+      <p class="text-sm text-slate-300">
+        Entérate de las novedades de CLARVO antes que nadie, directo en
+        nuestro canal de WhatsApp.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-5 flex justify-center">
+    <div class="pulse-wrap relative w-full sm:w-auto">
+      <span class="pulse-ring absolute inset-0 rounded-xl" aria-hidden="true"></span>
+      <a
+        href={WHATSAPP_INVITE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="relative inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-cyan px-5 py-3 text-sm font-semibold text-[#050b1c] transition hover:brightness-110 sm:w-auto"
+      >
+        Seguir el canal
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <p class="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
+    Se abre en WhatsApp. No compartimos tu número con nadie más.
+  </p>
+</div>
+
+<style>
+  .pulse-ring {
+    background: var(--color-brand-cyan);
+    opacity: 0.55;
+    animation: pulse-flash 2.2s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  @keyframes pulse-flash {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.45;
+    }
+    50% {
+      transform: scale(1.06);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-ring {
+      animation: none;
+      opacity: 0;
+    }
+  }
+</style>

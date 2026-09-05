@@ -5,14 +5,20 @@ interface Props {
 
 const { class: className = "" } = Astro.props;
 const MARK_SRC = "/images/logo/crystal-mark.png";
+
+const CONTOUR_PATH =
+  "M 7,20 L 16,40 L 25,60 L 33,80 L 42,100 L 51,120 L 60,140 L 69,160 L 78,180 L 87,200 L 96,220 L 105,240 L 114,260 L 123,280 L 132,300 L 141,320 L 150,340 L 159,360 L 168,380 L 177,400 L 186,420 L 195,440 L 205,460 L 214,480 L 224,500 L 234,520 L 244,540 L 255,560 L 266,580 L 276,600 L 287,620 L 298,640 L 309,660 L 319,680 L 330,700 L 341,720 L 352,740 L 363,760 L 373,780 L 387,800 L 400,820 L 413,840 L 426,860 L 440,880 L 453,900 L 466,920 L 478,940 L 492,960 L 505,980 L 518,1000 L 530,1020 L 543,1040 L 556,1060 L 569,1080 L 582,1099 L 595,1080 L 608,1060 L 620,1040 L 633,1020 L 645,1000 L 658,980 L 670,960 L 683,940 L 696,920 L 708,900 L 720,880 L 733,860 L 745,840 L 758,820 L 770,800 L 782,780 L 795,760 L 806,740 L 818,720 L 830,700 L 842,680 L 853,660 L 865,640 L 876,620 L 888,600 L 898,580 L 909,560 L 920,540 L 931,520 L 941,500 L 951,480 L 961,460 L 972,440 L 981,420 L 991,400 L 1002,380 L 1011,360 L 1021,340 L 1031,320 L 1041,300 L 1051,280 L 1060,260 L 1070,240 L 1080,220 L 1089,200 L 1099,180 L 1108,160 L 1117,140 L 1127,120 L 1136,100 L 1145,80 L 1154,60 L 1163,40 L 1172,20";
 ---
 
 <div class={`relative ${className}`}>
+  <div class="glow-blob glow-blob--left absolute" aria-hidden="true"></div>
+  <div class="glow-blob glow-blob--right absolute" aria-hidden="true"></div>
+
   <img
     src={MARK_SRC}
     alt=""
     aria-hidden="true"
-    class="block h-full w-full object-contain"
+    class="relative block h-full w-full object-contain"
     width="1181"
     height="1201"
   />
@@ -23,9 +29,65 @@ const MARK_SRC = "/images/logo/crystal-mark.png";
   >
     <div class="crystal-sheen absolute"></div>
   </div>
+
+  <svg
+    viewBox="0 0 1181 1201"
+    class="pointer-events-none absolute inset-0 h-full w-full"
+    aria-hidden="true"
+  >
+    <defs>
+      <filter id="crystal-dot-blur" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="26" />
+      </filter>
+    </defs>
+    <circle r="16" fill="#d6faff" filter="url(#crystal-dot-blur)" class="crystal-travel-dot">
+      <animateMotion
+        dur="7s"
+        repeatCount="indefinite"
+        keyPoints="0;1;0"
+        keyTimes="0;0.5;1"
+        calcMode="linear"
+        path={CONTOUR_PATH}
+      />
+    </circle>
+  </svg>
 </div>
 
 <style>
+  .glow-blob {
+    inset: 10%;
+    border-radius: 9999px;
+    filter: blur(40px);
+    background: radial-gradient(circle, rgba(86, 211, 255, 0.55), transparent 70%);
+    animation: glow-pulse 5s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  .glow-blob--left {
+    animation-delay: 0s;
+  }
+
+  .glow-blob--right {
+    animation-delay: 1.6s;
+    background: radial-gradient(circle, rgba(127, 224, 255, 0.5), transparent 70%);
+  }
+
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      transform: scale(0.85);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0.9;
+    }
+  }
+
+  .crystal-travel-dot {
+    opacity: 0.85;
+  }
+
   .crystal-sheen {
     inset: -75%;
     background: linear-gradient(
@@ -54,6 +116,13 @@ const MARK_SRC = "/images/logo/crystal-mark.png";
     .crystal-sheen {
       animation: none;
       transform: translate(0, 0);
+    }
+    .glow-blob {
+      animation: none;
+      opacity: 0.6;
+    }
+    .crystal-travel-dot {
+      display: none;
     }
   }
 </style>
