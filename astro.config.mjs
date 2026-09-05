@@ -3,10 +3,9 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
-// TODO: reemplazar por el dominio real antes de desplegar (Segmento 5).
-// clarvo.example usa el TLD reservado para documentación (RFC 2606), nunca
-// resuelve a un sitio real, así que no puede quedar hardcodeado por error.
-const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://clarvo.example';
+// Dominio real de producción (Segmento 5). Overrideable vía PUBLIC_SITE_URL
+// en `.env` para builds locales/staging contra otro dominio.
+const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://clarvo.mx';
 
 // https://astro.build/config
 export default defineConfig({
