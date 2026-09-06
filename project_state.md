@@ -386,6 +386,20 @@ Settings → Pages (paso 3) — sin eso, el sitio no será alcanzable en
 solo publicaría en `https://addv-sites.github.io/clarvo-tempSite/`, la URL
 default de Pages, hasta que el dominio custom quede activo).
 
+**Resuelto (2026-09-06):** verificado en vivo desde otra sesión de trabajo
+(la del sitio ADDV, al enlazar `productos.html` a `clarvo.mx`) — DNS ya
+propagado y Pages ya configurado correctamente:
+- `clarvo.mx` (A) → `185.199.108.153`, `.109.153`, `.110.153`, `.111.153`
+  (las 4 IPs de GitHub Pages, confirmado por `nslookup`).
+- `www.clarvo.mx` (CNAME) → `addv-sites.github.io`.
+- `https://clarvo.mx` responde `200 OK` (certificado HTTPS ya
+  aprovisionado — "Enforce HTTPS" del paso 3 ya se cumplió, no quedó
+  pendiente).
+- `http://clarvo.mx` responde `301` → `https://clarvo.mx/`.
+
+Los 3 pasos manuales documentados arriba (push, DNS, Settings → Pages)
+están completos. Sitio en producción, alcanzable en el dominio final.
+
 ## Notas técnicas
 - `astro add tailwind` y `astro add sitemap` **fallan instalando dependencias
   automáticamente** (exit code 1) — patrón repetido, siempre se resuelve
