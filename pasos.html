@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CLARVO · Cómo conectar el formulario de /masterclass a Google Sheets</title>
+<style>
+  :root {
+    --ink: #0f1b33;
+    --muted: #5a6a89;
+    --border: #e2e7f2;
+    --surface: #f7f9fd;
+    --accent: #0091b8;
+    --accent-bg: #e6f7fb;
+    --code-bg: #0f1b33;
+    --code-text: #d9e2fd;
+    --warn-bg: #fff8e6;
+    --warn-border: #f0c869;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #ffffff;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-bg);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 62ch;
+    margin: 0 0 32px;
+  }
+  .note {
+    display: flex;
+    gap: 12px;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 14.5px;
+    margin-bottom: 40px;
+  }
+  .note strong { display: block; margin-bottom: 2px; }
+  .step {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+  }
+  .step:first-of-type { border-top: none; padding-top: 0; }
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .step h2 {
+    font-size: 19px;
+    margin: 0;
+  }
+  .step p { margin: 8px 0; color: #33415f; }
+  .step ol, .step ul {
+    margin: 10px 0;
+    padding-left: 22px;
+  }
+  .step li { margin: 6px 0; }
+  a.button-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    margin: 6px 0;
+  }
+  a { color: var(--accent); }
+  code {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 14px 0;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+  .highlight-line {
+    display: inline-block;
+    background: rgba(255, 214, 92, 0.18);
+    border-bottom: 2px solid #ffd65c;
+  }
+  .path {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .final-box {
+    margin-top: 40px;
+    background: var(--accent-bg);
+    border: 1px solid #b8e4ee;
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .final-box h2 { font-size: 17px; margin: 0 0 6px; }
+  .final-box p { margin: 0; color: #234; font-size: 14.5px; }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: #9aa6bd;
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="kicker">CLARVO · Setup sin backend</span>
+  <h1>Conectar el formulario de /masterclass a Google Sheets</h1>
+  <p class="lede">
+    6 pasos, todo en tu propia cuenta de Google. Al final obtienes una URL
+    que me pasas para conectar el formulario — no necesitas compartir
+    contraseñas ni accesos de tu cuenta en ningún momento.
+  </p>
+
+  <div class="note">
+    <span>🔒</span>
+    <div>
+      <strong>No compartas credenciales.</strong>
+      Ni contraseña, ni verificación en dos pasos, ni "dar acceso" a tu
+      cuenta. Todo el proceso ocurre en tu navegador; lo único que se
+      comparte al final es una URL pública de recepción de datos (como el
+      link del canal de WhatsApp que ya usa el sitio).
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">1</span>
+      <h2>Crea la hoja de cálculo</h2>
+    </div>
+    <p>Abre una Google Sheet nueva:</p>
+    <a class="button-link" href="https://sheets.new" target="_blank" rel="noopener noreferrer">sheets.new →</a>
+    <p>En la fila 1, escribe estos encabezados, uno por columna:</p>
+    <p><code>Fecha</code> · <code>Nombre</code> · <code>Correo</code> · <code>Negocio</code> · <code>Telefono</code> · <code>Origen</code></p>
+    <p>Ponle un nombre a la hoja arriba a la izquierda, por ejemplo <em>"CLARVO — Leads Masterclass"</em>.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">2</span>
+      <h2>Abre el editor de Apps Script</h2>
+    </div>
+    <p>Desde esa misma hoja, en el menú superior:</p>
+    <p class="path">Extensiones → Apps Script</p>
+    <p>Se abre una pestaña nueva con un editor de código, ya conectado a tu hoja.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">3</span>
+      <h2>Pega este código</h2>
+    </div>
+    <p>Borra el contenido de ejemplo (<code>function myFunction() {...}</code>) y pega esto completo:</p>
+    <pre><code>const CONFIG = {
+  NOTIFY_EMAIL: "TU-CORREO-AQUI@ejemplo.com", <span class="highlight-line">// &lt;-- cámbialo por tu correo real</span>
+};
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+
+    sheet.appendRow([
+      data.fecha,
+      data.nombre,
+      data.correo,
+      data.negocio,
+      data.telefono,
+      data.origen,
+    ]);
+
+    MailApp.sendEmail({
+      to: CONFIG.NOTIFY_EMAIL,
+      subject: "Nuevo registro — Masterclass CLARVO",
+      body:
+        "Nombre: " + data.nombre + "\n" +
+        "Correo: " + data.correo + "\n" +
+        "Negocio: " + data.negocio + "\n" +
+        "Teléfono: " + data.telefono + "\n" +
+        "Fecha: " + data.fecha,
+    });
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</code></pre>
+    <p><strong>Edita la línea 2</strong> (<code>NOTIFY_EMAIL</code>) con el correo real donde quieres recibir cada registro.</p>
+    <p>Guarda con <code>Ctrl+S</code>. Te pide nombre de proyecto — pon algo como <em>"Leads Masterclass"</em>.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">4</span>
+      <h2>Publica como aplicación web</h2>
+    </div>
+    <ol>
+      <li>Arriba a la derecha, botón azul <strong>Implementar → Nueva implementación</strong>.</li>
+      <li>Junto a "Seleccionar tipo" (ícono de engrane ⚙️) → <strong>Aplicación web</strong>.</li>
+      <li>Configura:
+        <ul>
+          <li><strong>Ejecutar como:</strong> Yo (tu correo)</li>
+          <li><strong>Quién tiene acceso:</strong> Cualquier usuario</li>
+        </ul>
+      </li>
+      <li>Clic en <strong>Implementar</strong>.</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">5</span>
+      <h2>Autoriza el script (es tuyo, no mío)</h2>
+    </div>
+    <p>
+      Te pide iniciar sesión y autorizar permisos (Sheets + Gmail). Aparece
+      una pantalla de advertencia tipo <em>"Google no verificó esta app"</em>
+      — es normal en scripts personales no publicados:
+    </p>
+    <ol>
+      <li>Clic en <strong>Configuración avanzada</strong>.</li>
+      <li>Clic en <strong>Ir a "Leads Masterclass" (no seguro)</strong>.</li>
+      <li>Clic en <strong>Permitir</strong>.</li>
+    </ol>
+    <p>Es tu script pidiéndote permiso a ti mismo — no le das acceso a nadie más.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">6</span>
+      <h2>Copia la URL</h2>
+    </div>
+    <p>
+      Al terminar aparece una <strong>URL de la aplicación web</strong>,
+      termina en <code>/exec</code>. Cópiala completa y pásamela para
+      conectar el formulario.
+    </p>
+  </div>
+
+  <div class="final-box">
+    <h2>Si en el futuro editas el código</h2>
+    <p>
+      Publicar de nuevo con "Nueva implementación" te da una URL distinta.
+      Para actualizar el código sin cambiar la URL:
+      <strong>Implementar → Gestionar implementaciones → ✏️ (editar) →
+      Versión: Nueva versión → Implementar</strong>.
+    </p>
+  </div>
+
+  <footer>CLARVO — clarvo-tempSite · guía generada 2026-09-14</footer>
+</div>
+</body>
+</html>

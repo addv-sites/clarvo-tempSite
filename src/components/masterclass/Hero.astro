@@ -1,0 +1,436 @@
+---
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { Package, Wallet, TrendingUp, User, Mail, Store, Phone, Lock, ArrowRight, Send, CircleCheckBig } from "@lucide/astro";
+
+const LEADS_ENDPOINT = import.meta.env.PUBLIC_LEADS_ENDPOINT ?? "";
+const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o";
+const PONENTE_PATH = "/images/ponente/ponente.png";
+const PONENTE_WEBP_PATH = "/images/ponente/ponente.webp";
+
+function publicFileExists(publicPath: string): boolean {
+  // Ver DashboardMockup.astro: en `astro build` el componente se empaqueta
+  // fuera del árbol de `public/`, así que hay que resolver desde process.cwd().
+  return existsSync(path.join(process.cwd(), "public", publicPath));
+}
+
+const hasPonentePhoto = publicFileExists(PONENTE_PATH);
+const hasPonenteWebp = publicFileExists(PONENTE_WEBP_PATH);
+
+const bullets = [
+  {
+    icon: Package,
+    title: "Inventario",
+    description: "No compres de más ni te quedes sin stock crítico.",
+  },
+  {
+    icon: Wallet,
+    title: "Dinero y utilidad",
+    description: "Descubre cuánto ganas de verdad, en números netos.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Decisiones",
+    description: "Decide con datos reales, no con suposiciones.",
+  },
+];
+
+const industries = [
+  { value: "comercio", label: "Comercio minorista / tienda física" },
+  { value: "servicios", label: "Servicios profesionales / asesoría" },
+  { value: "gastronomia", label: "Restaurante / cafetería / alimentos" },
+  { value: "distribucion", label: "Distribución y mayoreo" },
+  { value: "produccion", label: "Manufactura / taller artesanal" },
+];
+---
+
+<section class="relative overflow-hidden px-6 pb-16 pt-14 lg:pt-20" id="programa">
+  <div
+    class="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto h-[420px] max-w-4xl bg-brand-cyan/10 blur-[120px]"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-12 lg:items-start">
+    <div class="reveal lg:col-span-7">
+      <div
+        class="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-card/70 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand-cyan"
+      >
+        <span class="relative flex h-2 w-2" aria-hidden="true">
+          <span class="live-ping absolute inline-flex h-full w-full rounded-full bg-brand-cyan"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-cyan"></span>
+        </span>
+        Masterclass en vivo · 40 min · Cupos limitados
+      </div>
+
+      <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+        ¿Sigues llevando tu negocio <span class="text-brand-cyan">"a ojo"</span>?
+      </h1>
+      <p class="mt-3 text-xl font-semibold text-slate-200">
+        Puedes estar vendiendo mucho y perdiendo dinero sin saberlo.
+      </p>
+      <div class="mt-4 inline-block rounded-xl border border-brand-border bg-brand-card/60 px-4 py-3 text-slate-200">
+        Pasa de emprendedor improvisado a
+        <span class="font-semibold text-brand-cyan">dueño de negocio profesional.</span>
+      </div>
+
+      <div class="mt-8 grid gap-3 sm:grid-cols-3">
+        {
+          bullets.map(({ icon: Icon, title, description }) => (
+            <div class="rounded-xl border border-brand-border bg-brand-card/60 p-4">
+              <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-cyan/15 text-brand-cyan">
+                <Icon class="h-5 w-5" />
+              </span>
+              <p class="mt-3 font-semibold text-white">{title}</p>
+              <p class="mt-1 text-sm text-slate-300">{description}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-8 flex items-center gap-4">
+        {
+          hasPonentePhoto ? (
+            <picture>
+              {hasPonenteWebp && <source srcset={PONENTE_WEBP_PATH} type="image/webp" />}
+              <img
+                src={PONENTE_PATH}
+                alt="Equipo CLARVO"
+                class="h-14 w-14 rounded-full object-cover ring-2 ring-brand-cyan/40"
+                width="56"
+                height="56"
+                loading="lazy"
+              />
+            </picture>
+          ) : (
+            <span class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-brand-cyan/30 bg-brand-card text-sm font-bold text-brand-cyan">
+              CV
+            </span>
+          )
+        }
+        <p class="text-sm text-slate-300">
+          Sesión en vivo con el equipo CLARVO — cupos limitados a 35 asistentes por sala.
+        </p>
+      </div>
+    </div>
+
+    <div class="reveal lg:col-span-5" id="registro" style="transition-delay:120ms">
+      <div
+        class="rounded-2xl border border-brand-border bg-brand-card/90 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl md:p-8 lg:sticky lg:top-24"
+      >
+        <div class="mb-5 space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-brand-cyan">
+            <span id="mc-step-label">Paso 1 de 2 · Datos de acceso</span>
+            <span id="mc-progress-percent">50%</span>
+          </div>
+          <div class="h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div
+              id="mc-progress-bar"
+              class="h-full w-1/2 rounded-full bg-brand-cyan transition-[width] duration-500 ease-out"
+            >
+            </div>
+          </div>
+        </div>
+
+        <form id="mc-form" data-endpoint={LEADS_ENDPOINT} data-whatsapp={WHATSAPP_CHANNEL_URL} novalidate>
+          <div id="mc-step-1" class="flex flex-col gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-white">Reserva tu acceso</h2>
+              <p class="mt-1 text-sm text-slate-300">
+                Transmisión en vivo + plantilla de diagnóstico incluida.
+              </p>
+            </div>
+
+            <div>
+              <label for="mc-name" class="mb-1.5 block text-sm font-medium text-slate-200">
+                Nombre completo
+              </label>
+              <div class="relative">
+                <User class="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                <input
+                  type="text"
+                  id="mc-name"
+                  name="name"
+                  autocomplete="name"
+                  placeholder="Ej. Antonio Prado"
+                  class="w-full rounded-lg bg-[#050b1c]/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                />
+              </div>
+              <p id="mc-error-name" class="mt-1 hidden text-xs text-red-400"></p>
+            </div>
+
+            <div>
+              <label for="mc-email" class="mb-1.5 block text-sm font-medium text-slate-200">
+                Correo del negocio
+              </label>
+              <div class="relative">
+                <Mail class="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                <input
+                  type="email"
+                  id="mc-email"
+                  name="email"
+                  autocomplete="email"
+                  placeholder="nombre@tunegocio.com"
+                  class="w-full rounded-lg bg-[#050b1c]/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                />
+              </div>
+              <p id="mc-error-email" class="mt-1 hidden text-xs text-red-400"></p>
+            </div>
+
+            <div>
+              <label for="mc-business" class="mb-1.5 block text-sm font-medium text-slate-200">
+                Giro del negocio
+              </label>
+              <div class="relative">
+                <Store class="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                <select
+                  id="mc-business"
+                  name="business"
+                  class="w-full appearance-none rounded-lg bg-[#050b1c]/80 py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                >
+                  <option value="" selected>Selecciona tu rubro</option>
+                  {industries.map(({ value, label }) => <option value={value}>{label}</option>)}
+                </select>
+              </div>
+              <p id="mc-error-business" class="mt-1 hidden text-xs text-red-400"></p>
+            </div>
+
+            <div>
+              <label for="mc-phone" class="mb-1.5 block text-sm font-medium text-slate-200">
+                WhatsApp / Teléfono
+              </label>
+              <div class="relative">
+                <Phone class="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                <input
+                  type="tel"
+                  id="mc-phone"
+                  name="phone"
+                  autocomplete="tel"
+                  placeholder="55 1234 5678"
+                  class="w-full rounded-lg bg-[#050b1c]/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                />
+              </div>
+              <p id="mc-error-phone" class="mt-1 hidden text-xs text-red-400"></p>
+            </div>
+
+            <div class="hidden" aria-hidden="true">
+              <label for="mc-hp">No llenar</label>
+              <input type="text" id="mc-hp" name="hp" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <button
+              type="submit"
+              id="mc-submit"
+              class="cta-shine mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-brand-cyan py-3.5 text-sm font-bold text-[#050b1c] transition hover:brightness-110"
+            >
+              Continuar al paso final
+              <ArrowRight class="h-4 w-4" />
+            </button>
+            <p class="flex items-center justify-center gap-1.5 text-xs text-slate-400">
+              <Lock class="h-3.5 w-3.5" />
+              Tus datos nunca se comparten con terceros.
+            </p>
+          </div>
+
+          <div id="mc-step-2" class="hidden flex-col gap-4 text-center">
+            <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
+              <CircleCheckBig class="h-7 w-7" />
+            </span>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-brand-cyan">
+                ¡Lugar pre-reservado con éxito!
+              </p>
+              <h2 class="mt-1 text-xl font-bold text-white">Paso final: confirma tu acceso</h2>
+              <p class="mt-2 text-sm text-slate-300">
+                El link privado de la sesión en vivo se entrega en nuestro canal oficial de WhatsApp.
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-brand-border bg-[#050b1c]/60 p-4 text-left">
+              <div class="flex items-center gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#25D366]/15 text-[#25D366]">
+                  <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true">
+                    <path
+                      d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.2 4.79 1.2h.004c5.46 0 9.9-4.44 9.9-9.9 0-2.64-1.03-5.12-2.9-6.99A9.82 9.82 0 0 0 12.04 2Zm0 1.67c2.19 0 4.25.85 5.8 2.4a8.15 8.15 0 0 1 2.4 5.83c0 4.54-3.7 8.23-8.23 8.23a8.2 8.2 0 0 1-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.25-4.37c0-4.54 3.7-8.23 8.23-8.23Z"
+                    />
+                  </svg>
+                </span>
+                <div>
+                  <p class="text-sm font-bold text-white">Canal oficial CLARVO en WhatsApp</p>
+                  <p class="text-xs text-emerald-400">● Link de acceso listo para liberar</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="pulse-wrap relative">
+              <span class="pulse-ring absolute inset-0 rounded-full" aria-hidden="true"></span>
+              <a
+                href={WHATSAPP_CHANNEL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="relative flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] py-3.5 text-sm font-extrabold text-[#04120f] transition hover:brightness-105"
+              >
+                <Send class="h-4 w-4" />
+                Unirme al canal para confirmar
+              </a>
+            </div>
+            <p class="text-xs text-slate-400">
+              Se abre en WhatsApp. No exponemos tu número ni recibes llamadas intrusivas.
+            </p>
+            <button
+              type="button"
+              id="mc-back"
+              class="text-xs font-medium text-slate-400 underline underline-offset-2 hover:text-white"
+            >
+              Modificar mis datos de registro
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .live-ping {
+    opacity: 0.75;
+    animation: live-ping-anim 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+    will-change: transform, opacity;
+  }
+
+  @keyframes live-ping-anim {
+    0% {
+      transform: scale(1);
+      opacity: 0.75;
+    }
+    75%,
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+
+  .pulse-ring {
+    background: var(--color-brand-cyan);
+    opacity: 0.5;
+    animation: pulse-flash 2.2s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  @keyframes pulse-flash {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.4;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-ping,
+    .pulse-ring {
+      animation: none;
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  import { validateLead, buildLeadPayload, type LeadFormData } from "../../lib/leadForm";
+
+  const form = document.querySelector<HTMLFormElement>("#mc-form");
+
+  if (form) {
+    const step1 = form.querySelector<HTMLDivElement>("#mc-step-1")!;
+    const step2 = form.querySelector<HTMLDivElement>("#mc-step-2")!;
+    const progressBar = document.querySelector<HTMLDivElement>("#mc-progress-bar")!;
+    const progressPercent = document.querySelector<HTMLSpanElement>("#mc-progress-percent")!;
+    const stepLabel = document.querySelector<HTMLSpanElement>("#mc-step-label")!;
+    const backBtn = form.querySelector<HTMLButtonElement>("#mc-back");
+    const honeypot = form.querySelector<HTMLInputElement>("#mc-hp");
+
+    const fieldEls = {
+      name: form.querySelector<HTMLInputElement>("#mc-name")!,
+      email: form.querySelector<HTMLInputElement>("#mc-email")!,
+      business: form.querySelector<HTMLSelectElement>("#mc-business")!,
+      phone: form.querySelector<HTMLInputElement>("#mc-phone")!,
+    };
+
+    function setFieldError(key: keyof LeadFormData, message?: string) {
+      const input = fieldEls[key];
+      const errorEl = form!.querySelector<HTMLParagraphElement>(`#mc-error-${key}`);
+      if (!input || !errorEl) return;
+
+      if (message) {
+        input.classList.add("ring-2", "ring-red-500/70");
+        errorEl.textContent = message;
+        errorEl.classList.remove("hidden");
+      } else {
+        input.classList.remove("ring-2", "ring-red-500/70");
+        errorEl.classList.add("hidden");
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      // Honeypot: si un bot llenó este campo invisible, no procesamos el envío.
+      if (honeypot && honeypot.value.trim() !== "") {
+        return;
+      }
+
+      const data: LeadFormData = {
+        name: fieldEls.name.value,
+        email: fieldEls.email.value,
+        business: fieldEls.business.value,
+        phone: fieldEls.phone.value,
+      };
+
+      const { valid, errors } = validateLead(data);
+      (Object.keys(fieldEls) as Array<keyof LeadFormData>).forEach((key) =>
+        setFieldError(key, errors[key]),
+      );
+      if (!valid) return;
+
+      const endpoint = form!.dataset.endpoint;
+      if (endpoint) {
+        try {
+          // Apps Script Web Apps no responden con headers CORS legibles desde
+          // fetch: se envía en modo "no-cors" (fire-and-forget) con
+          // text/plain para evitar el preflight OPTIONS que Apps Script no maneja.
+          await fetch(endpoint, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(buildLeadPayload(data)),
+          });
+        } catch (error) {
+          console.warn("No se pudo enviar el registro al endpoint de leads.", error);
+        }
+      } else {
+        console.warn(
+          "PUBLIC_LEADS_ENDPOINT no está configurado — el registro no se envió a ningún lado.",
+        );
+      }
+
+      step1.classList.add("hidden");
+      step2.classList.remove("hidden");
+      step2.classList.add("flex");
+      progressBar.style.width = "100%";
+      progressPercent.textContent = "100%";
+      stepLabel.textContent = "Paso 2 de 2 · Acceso seguro";
+    });
+
+    backBtn?.addEventListener("click", () => {
+      step2.classList.add("hidden");
+      step2.classList.remove("flex");
+      step1.classList.remove("hidden");
+      progressBar.style.width = "50%";
+      progressPercent.textContent = "50%";
+      stepLabel.textContent = "Paso 1 de 2 · Datos de acceso";
+    });
+  }
+</script>

@@ -90,6 +90,7 @@ confirmar aparte). Ver "Segmento 3b" abajo para el reemplazo.
 | 3 | ~~Waitlist funcional + integración EmailJS~~ → CTA comunidad WhatsApp | **Reemplazado** (2026-09-05) — ver Segmento 3b, requerimiento cambió por decisión del usuario |
 | 4 | SEO + Analytics (meta tags, JSON-LD, sitemap.xml, robots.txt, GA4, Search Console) | **Hecho** (parcial, ver pendientes) |
 | 5 | Deploy GitHub Actions → GitHub Pages | **Código listo, esperando pasos manuales del usuario** (ver Segmento 5 abajo) |
+| 6 | Landing `/masterclass` (funnel de captura de leads + retema de mockups de `stitch/`) | **Código completo, esperando 2 insumos del usuario antes de desplegar** (ver Segmento 6 abajo) |
 
 ## Pendiente de confirmar/recibir del usuario
 - Versión final de los tableros (dashboard) — el mockup hero ya usa
@@ -399,6 +400,176 @@ propagado y Pages ya configurado correctamente:
 
 Los 3 pasos manuales documentados arriba (push, DNS, Settings → Pages)
 están completos. Sitio en producción, alcanzable en el dominio final.
+
+## Segmento 6 — Landing `/masterclass` (2026-09-14)
+
+**Pedido:** el usuario dejó diseños en `stitch/` (`code.html`, `DESIGN.md`,
+`screen.png`) para una landing de masterclass a publicarse en
+`clarvo.mx/masterclass`, pidiendo capturar nombre/correo/negocio/teléfono
+del visitante además de invitarlo al canal de WhatsApp — todo sin backend
+propio (regla fija del sitio).
+
+**Análisis/crítica (protocolo, antes de implementar) — propuesta visual
+antes/después mostrada y aprobada primero, ver artifact publicado en la
+conversación:**
+- El mock de `stitch/` trae su propio sistema de diseño ("Clarvo Precision
+  Dark": paleta cobalto+cian dual, Plus Jakarta Sans vía Google Fonts CDN,
+  Tailwind vía `<script src="cdn.tailwindcss.com">`, iconos Material
+  Symbols por CDN) que no coincide con la identidad real ya en producción
+  (acento único `#2fd2ff`, tarjetas `brand-card`/`brand-border`, Tailwind
+  v4 compilado con Vite, `@lucide/astro`). Se retemátizó completo a la
+  identidad real en vez de portarlo literal.
+- El formulario de 2 pasos del mock original **no capturaba nada** — el
+  botón "Continuar" solo cambiaba de vista sin enviar los datos a ningún
+  lado. Se implementó el envío real (ver más abajo).
+- Se agregó campo de teléfono/WhatsApp (el mock original no lo traía) por
+  pedido explícito del usuario.
+- Fotos de stock del mock (avatar de perfil, retrato de "ponente" apuntando
+  a URLs de `lh3.googleusercontent.com` sin licencia clara) se quitaron —
+  reemplazadas por fallback de iniciales hasta que el usuario ponga una
+  foto real.
+
+**Decisión de arquitectura de captura (3 alternativas presentadas, usuario
+eligió la primera):**
+- **Elegida — Google Sheets vía Google Apps Script (Web App):** el
+  formulario hace `fetch` a una URL `/exec` publicada por el usuario desde
+  un Apps Script atado a una Google Sheet propia. Un solo script cubre las
+  dos necesidades del usuario ("correo y base de datos"): agrega una fila
+  por registro **y** dispara un correo de notificación vía
+  `MailApp.sendEmail`.
+  - Descartadas: EmailJS (ya autorizado en el proyecto, pero deja los leads
+    como correos sueltos, no una lista) y Formspree/Web3Forms (cero setup
+    propio, pero un tercero externo procesa los datos del cliente y hay
+    límite de envíos gratis).
+  - El usuario ofreció compartir credenciales de su cuenta de Google — se
+    rechazó explícitamente (regla de seguridad: nunca se aceptan
+    contraseñas/tokens/2FA de terceros). El Apps Script lo publica el
+    usuario en su propia cuenta; lo único que se necesita aquí es la URL
+    `/exec` resultante (no es secreta, es un endpoint público de recepción,
+    igual que el link del canal de WhatsApp ya hardcodeado) y el correo de
+    destino para las notificaciones.
+- Foto de ponente/equipo: el usuario dejará `ponente.png` en
+  `public/images/dashboard/../ponente/ponente.png` — implementado con
+  fallback automático a un badge con iniciales ("CV") si el archivo aún no
+  existe (mismo patrón `publicFileExists()`/`process.cwd()` que
+  `DashboardMockup.astro`, ver Segmento 1d para el porqué de ese patrón).
+- Movimiento/motion: pedido explícito del usuario ("efectos sutiles,
+  desvanecimientos, destellos, sin perder profesionalismo") — implementado
+  vía skill `low-impact-motion` (solo `transform`/`opacity`, nunca
+  propiedades que disparan layout/paint):
+  - Reveal-on-scroll con `IntersectionObserver` (nunca el evento `scroll`
+    continuo) en cada sección — utilidad compartida `.reveal`/`.is-visible`
+    en `global.css`, envuelta en `@media (prefers-reduced-motion:
+    no-preference)` para que con reduced-motion el contenido nunca dependa
+    de que el observer corra.
+  - Destello ("shine") sutil al hover en los CTAs primarios —
+    `.cta-shine` en `global.css`, pseudo-elemento con gradiente animado por
+    `transform: translateX` únicamente.
+  - Pulso ambiental en el botón de WhatsApp del paso 2 y en el punto "en
+    vivo" del badge — mismo patrón que ya usa `CommunityCta.astro`
+    (`scale`/`opacity` en bucle, respeta `prefers-reduced-motion`).
+  - FAQ con `<details>`/`<summary>` nativos (sin JS) — el chevron rota con
+    `group-open:rotate-180` de Tailwind.
+  - Barra sticky inferior (mobile/tablet): visibilidad controlada por
+    `IntersectionObserver` sobre la tarjeta `#registro` (no por el evento
+    `scroll`).
+
+**Implementado (archivos nuevos):**
+- `src/pages/masterclass/index.astro` — ensambla la página, ruta pública
+  final `clarvo.mx/masterclass`.
+- `src/components/masterclass/{Header,Hero,Comparativa,Pilares,Faq,FinalCta,StickyBar}.astro`.
+- `src/lib/leadForm.ts` (+ `leadForm.test.ts`, 8 tests, todos pasan) —
+  validación de nombre/correo/negocio/teléfono y armado del payload,
+  aislado del DOM para poder testear sin navegador.
+- `public/images/ponente/README.md` — documenta el archivo esperado y el
+  fallback.
+- `.env.example` y `.github/workflows/deploy.yml`: nueva variable
+  `PUBLIC_LEADS_ENDPOINT` (mismo patrón que `PUBLIC_GA_MEASUREMENT_ID` —
+  si se deja vacía, el formulario sigue funcionando pero no envía nada a
+  ningún lado, con un aviso en consola).
+- `src/styles/global.css`: utilidades compartidas `.reveal`/`.is-visible` y
+  `.cta-shine`.
+
+**Cómo envía los datos el formulario (importante para cuando se configure
+el endpoint):** `fetch(endpoint, { method: "POST", mode: "no-cors",
+headers: { "Content-Type": "text/plain;charset=utf-8" }, body:
+JSON.stringify(payload) })` — Apps Script Web Apps no responden con
+headers CORS legibles desde `fetch`, así que el envío es "fire-and-forget"
+en modo `no-cors` (no se puede leer la respuesta ni confirmar entrega
+desde el cliente; es la técnica estándar para este truco sin backend).
+Incluye un honeypot (`#mc-hp`, campo invisible) para descartar bots sin
+exponer el endpoint a un captcha.
+
+**Verificado:** `npm test` (19/19 — 8 nuevos de `leadForm` + 11 previos),
+`astro build` sin errores, inspección del HTML de salida (`devices.png` se
+resuelve bien, sin `screen-placeholder`; fallback "CV" activo porque
+`ponente.png` aún no existe; sin `cdn.tailwindcss.com` ni
+`fonts.googleapis.com` en el output). Verificación funcional en navegador
+real (Chrome vía extensión): flujo completo del formulario (validación de
+los 4 campos con mensajes de error, transición a paso 2, barra de progreso,
+botón de WhatsApp con pulso), acordeón de FAQ, barra sticky apareciendo al
+salir de vista la tarjeta de registro, sección comparativa reutilizando
+`DashboardMockup` sin cambios.
+
+**Pendiente — 2 insumos del usuario antes de poder desplegar a
+producción:**
+1. ~~URL `/exec` del Apps Script + correo de destino~~ — **resuelto
+   2026-09-21**, ver "Corrección 2026-09-21" abajo.
+2. **`public/images/ponente/ponente.png`** — el usuario dijo que lo
+   dejará ahí directamente; mientras tanto el badge "CV" se ve en
+   producción sin romper nada.
+
+No se ha hecho commit ni push de este segmento — el código vive sin
+confirmar en el working tree hasta que el usuario revise el resultado.
+
+### Corrección 2026-09-21: endpoint de leads no llegaba al Sheet (diagnóstico + fix)
+
+**Pedido:** el usuario dio la primera URL `/exec`
+(`.../a/macros/addv.mx/s/.../exec`) y la probó llenando el formulario en
+local — no vio ninguna fila nueva en el Google Sheet.
+
+**Diagnóstico:** `.env` local se creó con la URL dada
+(`PUBLIC_LEADS_ENDPOINT`), build/dev verificado (URL horneada
+correctamente en el HTML de salida — el amarre en sí no tenía bug). Se
+probó el envío real en navegador (Chrome vía extensión): la request POST
+al endpoint sí salía, pero devolvía **503**. `curl` directo al mismo
+endpoint reveló la causa real: **401 Unauthorized**, página de Google
+Drive "No se pudo abrir el archivo en este momento" — la URL traía
+`/a/macros/addv.mx/` (variante de dominio Google Workspace), señal de que
+el deploy del Apps Script quedó con "Quién tiene acceso" en **"Solo yo"**
+o **"Cualquiera de `addv.mx`"**, no en **"Cualquier usuario"** como pedía
+la guía (`pasos.html`) — por eso visitantes anónimos del sitio no podían
+pegarle al endpoint.
+
+**Fix (hecho por el usuario, fuera del repo):** editó la implementación
+en Apps Script (Implementar → Administrar implementaciones → lápiz →
+"Quién tiene acceso" → Cualquier usuario) y volvió a implementar — generó
+una **URL nueva sin el prefijo de dominio**
+(`script.google.com/macros/s/.../exec`). `.env` local actualizado con
+la URL nueva.
+
+**Verificación de la URL nueva:** `curl -i` directo mostró un `302
+Found` normal (comportamiento esperado de Apps Script Web Apps — redirige
+a `script.googleusercontent.com/macros/echo?...`) en vez del `401`
+anterior — confirma que el deploy ya es público. Siguiendo ese redirect a
+mano (`curl` no reenvía bien un POST a través de un 302 con `-L` simple;
+se resolvió pegándole directo al header `Location` recibido) la respuesta
+final fue `200 OK` con cuerpo `{"ok":true}` — el `doPost` del script sí
+corre y responde bien.
+
+**Hallazgo colateral (no bloqueante, documentado por si se repite):** la
+prueba vía navegador automatizado (extensión de Chrome) siguió mostrando
+`503` en el request capturado por las network tools, pese a que `curl`
+plano contra la misma URL nueva respondía limpio. Hipótesis: protección
+anti-bot de Google reaccionando a tráfico de automatización (Chrome
+Devtools Protocol vía extensión), no un fallo real del endpoint —
+Apps Script ejecuta `doPost` (y agrega la fila a la Sheet) **antes** de
+emitir cualquier respuesta HTTP, así que aunque el request automatizado
+mostrara 503, el lead ya había quedado guardado. **Confirmado por el
+usuario:** las filas de prueba (`Prueba Debug 2/3/4/5`, `Prueba Claude`)
+sí aparecieron en el Google Sheet — el endpoint funciona end-to-end para
+visitantes reales (no automatizados). Filas de prueba pendientes de
+borrar por el usuario.
 
 ## Notas técnicas
 - `astro add tailwind` y `astro add sitemap` **fallan instalando dependencias

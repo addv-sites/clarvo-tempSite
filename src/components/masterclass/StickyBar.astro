@@ -1,0 +1,26 @@
+---
+import { ArrowRight } from "@lucide/astro";
+---
+
+<aside
+  id="mc-sticky-bar"
+  class="fixed inset-x-4 bottom-4 z-40 flex translate-y-28 items-center justify-between gap-3 rounded-full border border-brand-border bg-brand-card/95 p-3 pl-4 shadow-[0_10px_35px_rgba(0,0,0,0.7)] backdrop-blur-md transition-transform duration-300"
+>
+  <div class="flex items-center gap-2.5 min-w-0">
+    <span class="relative flex h-2.5 w-2.5 shrink-0" aria-hidden="true">
+      <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+      <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+    </span>
+    <div class="min-w-0">
+      <p class="truncate text-sm font-bold leading-tight text-white">Masterclass online gratuita</p>
+      <p class="hidden truncate text-xs text-slate-400 sm:block">Quedan pocos cupos para la sesión en vivo</p>
+    </div>
+  </div>
+  <a
+    href="#registro"
+    class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand-cyan px-4 py-2.5 text-sm font-bold text-[#050b1c] transition hover:brightness-110"
+  >
+    Reservar
+    <ArrowRight class="h-4 w-4" />
+  </a>
+</aside>

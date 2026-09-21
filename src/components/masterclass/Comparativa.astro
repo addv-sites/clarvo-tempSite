@@ -1,0 +1,70 @@
+---
+import { TriangleAlert, Sparkles, ArrowRight } from "@lucide/astro";
+import DashboardMockup from "../DashboardMockup.astro";
+---
+
+<section class="reveal border-y border-brand-border bg-[#050e21] px-6 py-20" id="comparativa">
+  <div class="mx-auto max-w-6xl">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-cyan">
+        El poder de la transformación
+      </p>
+      <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+        El abismo entre suponer y tener el control
+      </h2>
+      <p class="mt-3 text-slate-300">
+        La diferencia entre cerrar el mes con estrés crónico o con utilidad neta segura en tu
+        cuenta.
+      </p>
+    </div>
+
+    <div class="mt-12 grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1fr]">
+      <div class="flex flex-col gap-4 rounded-2xl border border-red-900/40 bg-[#12172a] p-6 md:p-8">
+        <span
+          class="inline-flex w-fit items-center gap-1.5 rounded-full bg-red-500/12 px-3 py-1 text-xs font-bold text-red-400"
+        >
+          <TriangleAlert class="h-3.5 w-3.5" />
+          De esto (a ciegas)
+        </span>
+        <h3 class="text-xl font-bold text-white">El caos del emprendedor tradicional</h3>
+        <p class="text-sm text-slate-300">
+          Libretas, notas sueltas, horas cuadrando números y la duda constante: "¿a dónde se fue
+          el dinero si vendimos bien?"
+        </p>
+        <div class="rounded-xl border-l-2 border-red-500/50 bg-[#050b1c] p-4 font-mono text-sm text-slate-400">
+          <div class="flex justify-between"><span>Ventas registradas:</span><span>¿$120,000 aprox?</span></div>
+          <div class="flex justify-between"><span>Gastos hormiga:</span><span>Sin ticket ni rastro</span></div>
+          <div class="flex justify-between font-bold text-red-400"><span>Utilidad en mano:</span><span>Desconocida</span></div>
+        </div>
+      </div>
+
+      <div class="hidden flex-col items-center justify-center gap-3 lg:flex">
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-cyan text-[#050b1c] shadow-[0_0_24px_rgba(47,210,255,0.4)]"
+        >
+          <ArrowRight class="h-6 w-6" />
+        </div>
+        <span class="max-w-[80px] text-center text-xs font-extrabold uppercase tracking-widest text-brand-cyan">
+          40 min de masterclass
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-4 rounded-2xl border border-brand-border bg-gradient-to-b from-brand-card to-[#0a1428] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.5)] md:p-8">
+        <span
+          class="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-cyan/12 px-3 py-1 text-xs font-bold text-brand-cyan"
+        >
+          <Sparkles class="h-3.5 w-3.5" />
+          A esto (claridad total)
+        </span>
+        <h3 class="text-xl font-bold text-white">El control del dueño profesional</h3>
+        <p class="text-sm text-slate-300">
+          Un panel integrado en la nube: margen neto exacto, existencias sincronizadas y reportes
+          de rentabilidad en tiempo real.
+        </p>
+        <div class="-mx-2 -mb-2">
+          <DashboardMockup />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

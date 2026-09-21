@@ -1,0 +1,46 @@
+---
+import { ArrowRight, MessageCircle, ShieldCheck } from "@lucide/astro";
+
+const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o";
+---
+
+<section class="reveal px-6 pb-24">
+  <div class="mx-auto max-w-5xl">
+    <div
+      class="relative overflow-hidden rounded-3xl border border-brand-border bg-gradient-to-r from-brand-cyan/10 via-[#0f1f42] to-brand-card p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.6)] md:p-12"
+    >
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-cyan">Toma la decisión hoy</p>
+      <h2 class="mx-auto mt-3 max-w-2xl text-3xl font-extrabold tracking-tight sm:text-4xl">
+        No adivines. No pierdas. <span class="text-brand-cyan">Toma el control.</span>
+      </h2>
+      <p class="mx-auto mt-3 max-w-xl text-slate-300">
+        40 minutos que pueden redefinir el futuro financiero de tu negocio este año.
+      </p>
+
+      <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <a
+          href="#registro"
+          class="cta-shine inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-cyan px-8 py-4 text-sm font-extrabold text-[#050b1c] transition hover:brightness-110 sm:w-auto"
+        >
+          Apartar mi lugar gratis
+          <ArrowRight class="h-4 w-4" />
+        </a>
+        <a
+          href={WHATSAPP_CHANNEL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-card px-6 py-4 text-sm font-semibold text-white transition hover:bg-brand-card/60 sm:w-auto"
+        >
+          <MessageCircle class="h-4 w-4 text-emerald-400" />
+          Ir al canal de WhatsApp
+        </a>
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-400">
+        <span class="flex items-center gap-1"><ShieldCheck class="h-3.5 w-3.5 text-emerald-400" /> 100% online</span>
+        <span class="flex items-center gap-1"><ShieldCheck class="h-3.5 w-3.5 text-emerald-400" /> Sin costo de inscripción</span>
+        <span class="flex items-center gap-1"><ShieldCheck class="h-3.5 w-3.5 text-emerald-400" /> Cupos limitados</span>
+      </div>
+    </div>
+  </div>
+</section>

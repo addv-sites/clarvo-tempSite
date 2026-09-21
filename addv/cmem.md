@@ -516,3 +516,56 @@ tocarlo — no hay `gh` CLI en este entorno):**
 
 **Pendiente:** que el usuario haga esos 2 pasos manuales — sin eso el sitio
 solo sirve en la URL default de Pages, no en `clarvo.mx`.
+
+## 2026-09-14 — Segmento 6: landing /masterclass (funnel de captura sin backend)
+
+**Pedido:** usuario dejó diseños en `stitch/` para una landing de masterclass
+en `clarvo.mx/masterclass`; quiere capturar nombre/correo/negocio/teléfono
+del visitante además de invitarlo al canal de WhatsApp, todo sin backend
+propio (regla fija del sitio).
+
+**Propuesta visual antes/después:** se publicó un artifact comparando el
+home actual (captura real de `astro dev`) contra un mockup HTML de la
+propuesta retematizada a la identidad real (logo, cristal, acento cian
+único) — aprobado por el usuario antes de tocar código, cumpliendo el paso
+4 del protocolo.
+
+**Crítica al mock de `stitch/` (paso 3, antes de implementar literal):** su
+paleta/tipografía ("Precision Dark", Plus Jakarta Sans + Tailwind CDN) no
+coincide con la identidad ya en producción; su formulario de 2 pasos era
+solo decorativo (no enviaba nada); no traía campo de teléfono; usaba fotos
+de stock sin licencia. Todo corregido en la implementación final.
+
+**Arquitectura de captura — 3 alternativas presentadas, usuario eligió
+Google Sheets vía Apps Script** (un solo script agrega fila a una Sheet +
+manda correo de notificación, cubre "correo y base de datos" con una sola
+pieza). Cuando el usuario ofreció compartir credenciales de su cuenta de
+Google para configurarlo, se rechazó explícitamente — regla de seguridad:
+nunca se aceptan contraseñas/tokens/2FA de terceros. Se le pidió en cambio
+que publique el Apps Script él mismo y comparta solo la URL `/exec`
+resultante (no es secreta) + el correo de destino.
+
+**Implementado:** página `src/pages/masterclass/index.astro` completa
+(Header, Hero con funnel de 2 pasos, Comparativa reutilizando
+`DashboardMockup`, Pilares, FAQ nativo con `<details>`, FinalCta,
+StickyBar), lógica de validación aislada y testeada en
+`src/lib/leadForm.ts` (8 tests nuevos), envío `fetch` en modo `no-cors` al
+endpoint (variable `PUBLIC_LEADS_ENDPOINT`, mismo patrón que
+`PUBLIC_GA_MEASUREMENT_ID` — vacío no rompe, solo no envía), honeypot
+anti-spam, fallback de foto de ponente a badge de iniciales
+(`publicFileExists()`/`process.cwd()`, mismo patrón que
+`DashboardMockup.astro`). Motion sutil pedido por el usuario implementado
+vía skill `low-impact-motion`: reveal-on-scroll con `IntersectionObserver`,
+destello (`cta-shine`) solo con `transform`, pulso ambiental ya usado en
+`CommunityCta`, todo con `prefers-reduced-motion` respetado.
+
+**Verificado:** `npm test` (19/19), `astro build` limpio, inspección del
+HTML de salida (sin placeholders rotos, sin CDNs externos), flujo completo
+probado en navegador real (validación, transición de pasos, FAQ, sticky
+bar, comparativa).
+
+**Pendiente:** URL `/exec` del Apps Script + correo de destino (el usuario
+aún no los ha dado — sin esto el formulario funciona pero no entrega el
+lead a ningún lado), y que el usuario deje `public/images/ponente/ponente.png`.
+Sin commit ni push todavía — código completo esperando revisión del
+usuario antes de confirmar el segmento como cerrado.

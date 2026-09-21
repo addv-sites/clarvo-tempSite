@@ -38,6 +38,7 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://clarvo.mx
           PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+          PUBLIC_LEADS_ENDPOINT: ${{ vars.PUBLIC_LEADS_ENDPOINT }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

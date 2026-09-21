@@ -5,3 +5,54 @@
   --color-brand-card: #0c1836;
   --color-brand-border: #1c2e5c;
 }
+
+/* Reveal-on-scroll: composite-only (opacity + transform), ver skill low-impact-motion.
+   Envuelto en `no-preference` para que, con reduced-motion, el contenido nunca
+   dependa de que el IntersectionObserver corra — aparece visible de inmediato. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s ease;
+    will-change: opacity, transform;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Destello sutil al hover sobre CTAs primarios — solo transform, sin animar en bucle. */
+.cta-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.cta-shine:hover::after,
+.cta-shine:focus-visible::after {
+  transform: translateX(120%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-shine::after {
+    display: none;
+  }
+}

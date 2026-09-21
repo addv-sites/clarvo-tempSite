@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "text-primary": "#FFFFFF", "on-background": "#d9e2fd", "surface": "#091326", "primary": "#b4c5ff", "surface-card": "#0A1931", "surface-elevated": "#10214B", "surface-container-low": "#121b2f", "on-tertiary-container": "#f3f3ff", "accent-success": "#10B981", "on-tertiary-fixed": "#061943", "on-secondary-container": "#00566a", "error-container": "#93000a", "primary-container": "#0062ff", "surface-tint": "#b4c5ff", "tertiary-container": "#5f6e9c", "secondary-fixed-dim": "#47d6ff", "surface-container-lowest": "#050e21", "on-surface-variant": "#c2c6d9", "accent-electric": "#00D2FF", "outline": "#8c90a2", "surface-deep": "#030B1E", "tertiary-fixed-dim": "#b6c5f9", "surface-container-highest": "#2c3549", "text-muted": "#64748B", "secondary": "#a5e7ff", "on-primary-fixed-variant": "#003ea8", "inverse-primary": "#0053da", "error": "#ffb4ab", "surface-canvas": "#071126", "inverse-on-surface": "#273045", "border-specular": "rgba(0, 210, 255, 0.25)", "secondary-container": "#00d2ff", "surface-bright": "#30394e", "on-primary-container": "#f3f3ff", "on-tertiary-fixed-variant": "#364571", "secondary-fixed": "#b6ebff", "on-error": "#690005", "tertiary-fixed": "#dbe1ff", "primary-fixed-dim": "#b4c5ff", "surface-card-hover": "#0E2242", "background": "#091326", "outline-variant": "#424656", "surface-container": "#161f33", "text-secondary": "#94A3B8", "on-tertiary": "#1f2e59", "on-error-container": "#ffdad6", "on-secondary-fixed": "#001f28", "on-secondary": "#003543", "on-primary-fixed": "#00174b", "surface-variant": "#2c3549", "on-secondary-fixed-variant": "#004e60", "border-translucent": "rgba(255, 255, 255, 0.08)", "tertiary": "#b6c5f9", "primary-fixed": "#dbe1ff", "inverse-surface": "#d9e2fd", "on-primary": "#002a78", "accent-azure": "#18B8E6", "surface-container-high": "#212a3e", "surface-dim": "#091326", "on-surface": "#d9e2fd" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-xl": "2.5rem", "margin": "2.5rem", "margin-mobile": "1.25rem", "space-xs": "0.25rem", "space-2xl": "4rem", "gutter": "1.5rem", "space-md": "1rem", "space-3xl": "6rem", "space-lg": "1.5rem", "gutter-mobile": "1rem" }, "fontFamily": { "headline-hero": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "title-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-hero-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "headline-hero": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["18px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "headline-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "title-lg": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-lg": ["15px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-hero-mobile": ["36px", { "lineHeight": "42px", "letterSpacing": "-0.025em", "fontWeight": "800" }], "body-md": ["15px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0.005em", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }] } } } };</script></head><body class="bg-surface-deep font-body-md text-on-surface antialiased selection:bg-accent-electric selection:text-surface-deep"><header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface-deep/80 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-20 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md shrink-0"><div class="flex flex-col"><div class="flex items-baseline tracking-tight"><span class="font-headline-sm text-headline-sm font-extrabold text-text-primary tracking-tight">CLARV</span><span class="font-headline-sm text-headline-sm font-extrabold text-accent-electric tracking-tight">O</span></div><span class="font-label-sm text-label-sm text-text-muted tracking-wider uppercase font-bold -mt-1">Tu negocio bajo control</span></div><div class="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container/60"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-success opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-accent-success"></span></span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Masterclass en Vivo · 100% Online · Cupos Limitados</span></div></div><nav class="hidden lg:flex items-center gap-space-md shrink-0" data-active-classes="text-text-primary font-semibold"><a aria-current="page" class="transition-colors duration-150 text-text-primary font-semibold" data-path="que-aprenderas" href="#">¿Qué aprenderás?</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-text-primary transition-colors duration-150" data-path="el-problema-a-ojo" href="#">El Problema 'A Ojo'</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-text-primary transition-colors duration-150" data-path="comparativa" href="#">Comparativa</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-text-primary transition-colors duration-150" data-path="temario" href="#">Temario</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-text-primary transition-colors duration-150" data-path="ponente-clarvo" href="#">Ponente/Clarvo</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-text-primary transition-colors duration-150" data-path="faqs" href="#">FAQs</a></nav><div class="flex items-center gap-space-sm shrink-0"><a class="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-container to-secondary-container text-text-primary font-label-lg text-label-lg font-bold shadow-[0_4px_20px_-2px_rgba(0,98,255,0.45)] hover:shadow-[0_6px_24px_0_rgba(0,210,255,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200" href="#registro"><span class="whitespace-nowrap">Apartar mi lugar gratis</span></a><img alt="Profile" class="w-8 h-8 rounded-full object-cover shrink-0 ml-1" src="https://lh3.googleusercontent.com/aida/AEtjO1VncxNKqwaE3BerZlfRMDQ9zs2a86Y23bjo9odWus2bQFxpWFXpmIXXyZdIHeo3Pur9yMMV5CXxNOuRH6OgAvjT88055VBcApGymdU9mViQmnI7VKUMc6oQpIJZuAO9CLj_9uL7IKW4by2jX8TcksBTQaGbR52NKt-V9Y-OysACfp3BOYv68IZPlWGp9YtgXMWUy86-7Sekqbl-CLCuir-lgGkNungWQu8SGrgPre-tbr_V1K3BBh9LBLP0YC1g_EGa3pD5J2CV"/></div></div></header><main class="w-full pt-20 bg-surface-deep min-h-screen"><div class="flex flex-col w-full text-on-surface selection:bg-accent-electric selection:text-surface-deep relative">
+<!-- Ambient Glow Canvas Accents -->
+<div class="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[360px] bg-gradient-to-tr from-primary-container/20 via-accent-electric/15 to-transparent blur-[140px] pointer-events-none -z-10"></div>
+<div class="absolute top-[1350px] -right-40 w-[600px] h-[400px] bg-gradient-to-b from-primary-container/15 via-accent-azure/10 to-transparent blur-[160px] pointer-events-none -z-10"></div>
+<div class="absolute top-[2600px] -left-40 w-[550px] h-[400px] bg-secondary-container/10 blur-[150px] pointer-events-none -z-10"></div>
+<!-- HERO SECTION: Apple Precision + Neuroventas Framework -->
+<section class="w-full max-w-7xl mx-auto px-gutter py-space-xl lg:py-space-2xl">
+<!-- Top Micro Badges & Neuro Callout -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-lg">
+<div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-surface-elevated/70 shadow-md">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-electric opacity-80"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-accent-electric"></span>
+</span>
+<span class="font-label-sm text-label-sm text-accent-electric uppercase tracking-widest font-bold">Masterclass Online Gratuita · 40 Minutos</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-card/60">
+<span class="material-symbols-outlined text-sm text-accent-electric">bolt</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Metodología Comprobada Clarvo™</span>
+</div>
+</div>
+<!-- Main Grid: Left Value Pitch vs Right Conversion Funnel Pod -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- Left Column: Emotional Impact & Bullets -->
+<div class="lg:col-span-7 flex flex-col space-y-space-lg">
+<div class="space-y-space-sm">
+<h1 class="font-headline-hero text-headline-hero text-text-primary tracking-tight">
+            ¿Sigues llevando tu negocio <span class="text-accent-electric inline-block underline decoration-accent-electric/40 decoration-wavy underline-offset-8">"a ojo"</span>?
+          </h1>
+<p class="font-headline-md text-headline-md text-secondary font-semibold">
+            Puedes estar vendiendo mucho y perdiendo dinero sin saberlo.
+          </p>
+<div class="inline-flex items-center px-4 py-2 rounded-xl bg-surface-container-high/80 mt-2 shadow-sm">
+<span class="font-body-lg text-body-lg text-text-primary font-medium">
+              Pasa de emprendedor improvisado a <span class="text-accent-electric font-bold">dueño de negocio profesional</span>.
+            </span>
+</div>
+</div>
+<!-- Handwritten inspiration badge -->
+<div class="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-surface-card to-surface-container-low shadow-sm">
+<span class="material-symbols-outlined text-secondary-container text-2xl">local_cafe</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-text-muted italic">"Grandes negocios también empiezan pequeños."</span>
+<span class="font-label-lg text-label-lg text-text-primary font-bold">Controla hoy, construye mañana.</span>
+</div>
+</div>
+<!-- Neuro Pillars Bullet List -->
+<div class="space-y-space-md pt-space-xs">
+<span class="font-label-md text-label-md text-text-muted uppercase tracking-wider font-bold">En 40 minutos aprenderás a controlar:</span>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
+<!-- Bullet 1 -->
+<div class="flex flex-col gap-2 p-4 rounded-xl bg-surface-card/80 hover:bg-surface-card-hover transition-all duration-200 group">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-accent-electric group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">inventory_2</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-text-primary">Inventario</h4>
+<p class="font-body-sm text-body-sm text-text-secondary">No compres de más ni te quedes sin stock crítico para venta.</p>
+</div>
+<!-- Bullet 2 -->
+<div class="flex flex-col gap-2 p-4 rounded-xl bg-surface-card/80 hover:bg-surface-card-hover transition-all duration-200 group">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-accent-electric group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">payments</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-text-primary">Dinero y Utilidad</h4>
+<p class="font-body-sm text-body-sm text-text-secondary">Descubre cuánto ganas realmente con números netos en mano.</p>
+</div>
+<!-- Bullet 3 -->
+<div class="flex flex-col gap-2 p-4 rounded-xl bg-surface-card/80 hover:bg-surface-card-hover transition-all duration-200 group">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-accent-electric group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">query_stats</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-text-primary">Decisiones</h4>
+<p class="font-body-sm text-body-sm text-text-secondary">Aprende a decidir con datos reales del negocio, no suposiciones.</p>
+</div>
+</div>
+</div>
+<!-- Speaker Mini Anchor -->
+<div class="flex items-center gap-4 pt-2">
+<img class="w-14 h-14 rounded-full object-cover ring-2 ring-accent-electric/30 shadow-md" data-alt="Close up portrait of a confident Mexican entrepreneur woman wearing a clean apron holding a white coffee mug looking up with optimism outdoors with warm sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbTV_1yeX0c8xUDa6tLg2-JKZNnBp8c63-PxYYzSyMD83c4CxP3a1TiBbz74YAl8zSYCv8_eIkEdzS9QDBPF4vNnmbqNSmFVG1m4yIVWNlzaU1qVc1KzFC7tUGpglVlS_Dklls18JdvXGhJjZacz-zsSlHLOb_2tjgN69c8gscyddFTCa9PK0XBYVKGUMgP9kidPoswHrtXMk9IuBMzPvtO-iO8mvoJHupOvXCxddyUhmSZZtUDsfX"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-text-primary font-bold">Sesión en Vivo con Especialistas Clarvo</span>
+<span class="font-body-sm text-body-sm text-text-secondary">Cupos limitados a 35 asistentes por sala para resolución de dudas 1 a 1.</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Interactive 3-Step Registration Funnel Pod -->
+<div class="lg:col-span-5 w-full" id="registro">
+<div class="relative rounded-2xl bg-surface-card/90 backdrop-blur-xl p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+<!-- Funnel Progress Step Indicator -->
+<div class="space-y-3 pb-6">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-accent-electric uppercase font-bold tracking-wider" id="step-label">Paso 1 de 2: Datos de acceso</span>
+<span class="font-label-sm text-label-sm text-text-muted font-bold" id="progress-percent">50% Completado</span>
+</div>
+<!-- Progress Bar Shell -->
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary-container to-accent-electric transition-all duration-500 ease-out" id="progress-bar" style="width: 50%;"></div>
+</div>
+</div>
+<!-- STEP 1 CONTAINER -->
+<div class="flex flex-col space-y-4" id="step-1-form">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Reserva tu Acceso Exclusivo</h2>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Transmisión en vivo y plantilla de diagnóstico descargable incluida.</p>
+</div>
+<div class="space-y-3">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5 font-medium">Nombre completo</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-text-muted text-lg">person</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-deep/80 text-text-primary placeholder:text-text-muted font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-accent-electric" id="lead-name" placeholder="Ej. Antonio Prado" type="text"/>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5 font-medium">Correo electrónico del negocio</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-text-muted text-lg">mail</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-deep/80 text-text-primary placeholder:text-text-muted font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-accent-electric" id="lead-email" placeholder="nombre@tunegocio.com" type="email"/>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5 font-medium">Giro principal del negocio</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-text-muted text-lg">store</span>
+<select class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-deep/80 text-text-primary font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-accent-electric" id="lead-industry">
+<option disabled="" selected="" value="">Selecciona tu rubro</option>
+<option value="comercio">Comercio Minorista / Tienda Física</option>
+<option value="servicios">Servicios Profesionales / Asesoría</option>
+<option value="gastronomia">Restaurante / Cafetería / Alimentos</option>
+<option value="distribucion">Distribución y Mayoreo</option>
+<option value="produccion">Manufactura / Taller Artesanal</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Fast Checkbox Assurance -->
+<label class="flex items-start gap-2.5 cursor-pointer pt-1">
+<input checked="" class="mt-1 rounded bg-surface-deep text-primary-container focus:ring-0" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-text-secondary">Deseo recibir el recordatorio 15 min antes vía WhatsApp y la hoja de balance pre-cargada.</span>
+</label>
+<!-- Submit Step 1 Button -->
+<button class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-primary-container to-secondary-container text-text-primary font-label-lg text-label-lg font-bold shadow-[0_8px_30px_rgba(0,98,255,0.45)] hover:shadow-[0_10px_35px_rgba(0,210,255,0.4)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 mt-2" id="btn-submit-step1" type="button">
+<span>Continuar al Paso Final</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+<div class="flex items-center justify-center gap-1.5 text-text-muted pt-2">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span class="font-label-sm text-label-sm">Tus datos nunca son compartidos con terceros. Cero spam.</span>
+</div>
+</div>
+<!-- STEP 2 / STEP FINAL CONTAINER (Initially Hidden) -->
+<div class="hidden flex-col space-y-4" id="step-2-confirmation">
+<div class="w-12 h-12 rounded-full bg-accent-success/20 flex items-center justify-center text-accent-success mx-auto">
+<span class="material-symbols-outlined text-3xl">check_circle</span>
+</div>
+<div class="text-center space-y-1">
+<span class="font-label-md text-label-md text-accent-electric uppercase tracking-wider font-bold">¡Lugar Pre-Reservado con Éxito!</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Paso Final Imprescindible: Confirmación de Acceso</h2>
+<p class="font-body-sm text-body-sm text-text-secondary">
+                Por políticas de cupo restringido, el link privado de la sala en vivo y el descargable de finanzas se liberan exclusivamente en nuestro canal seguro.
+              </p>
+</div>
+<!-- WhatsApp Direct Conversion Box -->
+<div class="p-4 rounded-xl bg-surface-elevated/80 flex flex-col gap-3 shadow-inner">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#25D366]/20 flex items-center justify-center text-[#25D366]">
+<span class="material-symbols-outlined text-2xl">chat</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-text-primary font-bold">Canal Oficial Clarvo en WhatsApp</span>
+<span class="font-label-sm text-label-sm text-accent-success">● Estado: Link de Zoom listo para liberar</span>
+</div>
+</div>
+<ul class="space-y-1.5 font-body-sm text-body-sm text-text-secondary">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-base">check</span> Enlace privado directo sin salas de espera</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-base">check</span> Hoja de cálculo: Calculadora de Ganancia Neta Real</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-base">check</span> Aviso 15 minutos antes de iniciar</li>
+</ul>
+</div>
+<a class="w-full py-4 px-6 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-surface-deep font-label-lg text-label-lg font-extrabold shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 text-center" href="https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-xl">send</span>
+<span>Unirme al Canal de WhatsApp para Confirmar</span>
+</a>
+<p class="font-label-sm text-label-sm text-text-muted text-center">
+              Se abre directo en WhatsApp. No exponemos tu número ni recibes llamadas intrusivas.
+            </p>
+<button class="font-label-md text-label-md text-text-muted hover:text-text-primary text-center underline" id="btn-back-step1" type="button">
+              Modificar mis datos de registro
+            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CONTRAST SECTION: 'DE ESTO... ...A ESTO' (Neuro-sales Comparative Visual) -->
+<section class="w-full bg-surface-container-lowest py-space-2xl">
+<div class="max-w-7xl mx-auto px-gutter space-y-space-xl">
+<!-- Section Header -->
+<div class="text-center max-w-3xl mx-auto space-y-space-xs">
+<span class="font-label-sm text-label-sm text-accent-electric tracking-widest uppercase font-bold">El Poder de la Transformación</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">El Abismo entre Suponer y Tener el Control</h2>
+<p class="font-body-lg text-body-lg text-text-secondary">
+          La diferencia entre cerrar el mes con estrés crónico o con utilidades netas seguras en tu cuenta bancaria.
+        </p>
+</div>
+<!-- Comparative Side-by-Side Pods -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
+<!-- SIDE A: Caos a ciegas -->
+<div class="lg:col-span-5 rounded-2xl bg-surface-container-high/60 p-6 md:p-8 flex flex-col justify-between space-y-space-md">
+<div class="space-y-space-sm">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error-container/40 text-error font-label-md text-label-md font-bold">
+<span class="material-symbols-outlined text-base">warning</span>
+<span>DE ESTO... (El negocio a ciegas)</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">El caos del emprendedor tradicional</h3>
+<p class="font-body-md text-body-md text-text-secondary">
+              Libretas arrugadas, notas sueltas en tickets, horas infinitas intentando cuadrar números al final del mes y la eterna duda: <em>"¿A dónde se fue el dinero si vendimos bien?"</em>
+</p>
+</div>
+<!-- Chaos Visual Representation Mockup -->
+<div class="rounded-xl bg-surface-deep/90 p-5 space-y-3 shadow-inner">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-error">
+<span>ESTADO CRÍTICO</span>
+<span class="material-symbols-outlined text-base">sentiment_dissatisfied</span>
+</div>
+<div class="space-y-2 font-mono text-body-sm text-on-surface-variant/70 border-l-2 border-error/50 pl-3">
+<div class="flex justify-between"><span>Ventas registradas:</span><span>¿$120,000 aprox?</span></div>
+<div class="flex justify-between"><span>Gastos hormiga:</span><span>Sin ticket ni rastro</span></div>
+<div class="flex justify-between"><span>Stock en bodega:</span><span>¿Quedan cajas o faltan?</span></div>
+<div class="flex justify-between font-bold text-error"><span>Utilidad en mano:</span><span>Desconocida</span></div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-lowest/80 text-text-muted font-body-sm text-body-sm italic">
+              "Trabajo 14 horas diarias, facturo más que el año pasado pero mi saldo en el banco sigue congelado."
+            </div>
+</div>
+<div class="pt-2 flex items-center gap-2 text-text-muted font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm text-error">close</span>
+<span>Riesgo constante de quiebra silenciosa y fuga de capital.</span>
+</div>
+</div>
+<!-- Transform Arrow Bridge (Desktop only) -->
+<div class="hidden lg:flex lg:col-span-2 flex-col items-center justify-center gap-3">
+<div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary-container to-secondary-container flex items-center justify-center text-text-primary shadow-[0_0_24px_rgba(0,210,255,0.4)] animate-pulse">
+<span class="material-symbols-outlined text-2xl">arrow_forward</span>
+</div>
+<span class="font-label-sm text-label-sm text-accent-electric uppercase font-extrabold tracking-widest text-center">40 Minutos de Masterclass</span>
+</div>
+<!-- SIDE B: Claridad Total con Clarvo Mockup Apple Style -->
+<div class="lg:col-span-5 rounded-2xl bg-gradient-to-b from-surface-card to-surface-elevated/70 p-6 md:p-8 flex flex-col justify-between space-y-space-md shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
+<div class="space-y-space-sm">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/20 text-accent-electric font-label-md text-label-md font-bold">
+<span class="material-symbols-outlined text-base">auto_awesome</span>
+<span>...A ESTO (Claridad Total Clarvo)</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">El control del dueño profesional</h3>
+<p class="font-body-md text-body-md text-text-secondary">
+              Un solo panel integrado en la nube. Conoce tu margen neto exacto por cada venta, existencias sincronizadas y reportes de rentabilidad en tiempo real.
+            </p>
+</div>
+<!-- Apple UI Inspired Dashboard Preview Mockup -->
+<div class="rounded-xl bg-surface-deep/95 p-5 shadow-2xl space-y-4">
+<!-- Window Bar -->
+<div class="flex items-center justify-between pb-2">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+</div>
+<span class="font-label-sm text-label-sm text-accent-electric font-mono tracking-tight font-bold">clarvo.mx · Dashboard Ejecutivo</span>
+<span class="material-symbols-outlined text-text-muted text-sm">wifi</span>
+</div>
+<!-- Dashboard Mini Metrics Row -->
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3 rounded-lg bg-surface-card shadow-sm">
+<span class="font-label-sm text-label-sm text-text-muted block">Ventas del mes</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="font-title-lg text-title-lg font-extrabold text-text-primary">$125,430</span>
+<span class="text-accent-success font-label-sm text-label-sm font-bold flex items-center">↑12%</span>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-card shadow-sm">
+<span class="font-label-sm text-label-sm text-text-muted block">Utilidad Neta Real</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="font-title-lg text-title-lg font-extrabold text-accent-electric">$28,560</span>
+<span class="text-accent-success font-label-sm text-label-sm font-bold flex items-center">↑18%</span>
+</div>
+</div>
+</div>
+<!-- Secondary Metrics: Inventory & Expenses -->
+<div class="grid grid-cols-2 gap-3 pt-1">
+<div class="p-3 rounded-lg bg-surface-card/60 flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-text-muted">Stock Activo</span>
+<span class="font-headline-sm text-headline-sm text-text-primary block font-bold">2,417 u</span>
+</div>
+<span class="material-symbols-outlined text-secondary text-2xl">package_2</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-card/60 flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-text-muted">Control Gastos</span>
+<span class="font-headline-sm text-headline-sm text-text-primary block font-bold">$41,320</span>
+</div>
+<span class="material-symbols-outlined text-accent-azure text-2xl">pie_chart</span>
+</div>
+</div>
+<!-- Mini Live Status -->
+<div class="p-2.5 rounded-lg bg-accent-success/10 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-accent-success animate-ping"></span>
+<span class="font-label-sm text-label-sm text-accent-success font-semibold">Salud Financiera: Óptima · Margen Operativo Saludable</span>
+</div>
+</div>
+<div class="pt-2 flex items-center gap-2 text-accent-electric font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-sm text-accent-success">check_circle</span>
+<span>Decisiones con 100% de certeza. Duerme con tranquilidad absoluta.</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- THE 3 PILLARS: Bento Grid Style -->
+<section class="w-full max-w-7xl mx-auto px-gutter py-space-2xl">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-xl">
+<div class="space-y-space-xs max-w-2xl">
+<span class="font-label-sm text-label-sm text-accent-electric tracking-widest uppercase font-bold">Temario Quirúrgico</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">Los 3 Pilares que Desbloquearás en 40 Minutos</h2>
+<p class="font-body-lg text-body-lg text-text-secondary">
+          Sin teoría aburrida ni tecnicismos contables enredados. Estrategias tácticas de aplicación inmediata para tu negocio.
+        </p>
+</div>
+<a class="inline-flex items-center gap-2 font-label-lg text-label-lg text-accent-electric hover:text-text-primary transition-colors" href="#registro">
+<span>Asegurar un lugar en la sala</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+<!-- Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Bento 1: Inventario Inteligente -->
+<div class="rounded-2xl bg-surface-card p-6 md:p-8 flex flex-col justify-between space-y-space-md hover:bg-surface-card-hover transition-all duration-300 group">
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-xl bg-primary-container/20 text-accent-electric flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">inventory</span>
+</div>
+<div class="space-y-2">
+<span class="font-label-sm text-label-sm text-accent-electric font-mono">Pilar 01</span>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Inventario Inteligente y Sin Mermas</h3>
+<p class="font-body-md text-body-md text-text-secondary">
+              Aprende el cálculo exacto del punto de reorden. Evita tener dinero congelado en almacén o perder ventas por quedarte en ceros sin previo aviso.
+            </p>
+</div>
+</div>
+<ul class="space-y-2 pt-4 font-body-sm text-body-sm text-on-surface-variant">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Clasificación ABC de productos más rentables</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Alertas de existencias mínimas en tiempo real</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Eliminación de mermas y fuga de mercancía</li>
+</ul>
+</div>
+<!-- Bento 2: Radiografía Financiera -->
+<div class="rounded-2xl bg-gradient-to-b from-surface-card to-surface-elevated/90 p-6 md:p-8 flex flex-col justify-between space-y-space-md shadow-[0_10px_35px_rgba(0,98,255,0.15)] group">
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-xl bg-accent-electric/20 text-accent-electric flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+</div>
+<div class="space-y-2">
+<span class="font-label-sm text-label-sm text-accent-electric font-mono">Pilar 02 · Clave</span>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Radiografía Financiera y Utilidad Neta</h3>
+<p class="font-body-md text-body-md text-text-secondary">
+              Aprenderás a separar tajantemente el dinero de las ventas del dinero que realmente te pertenece a ti como dueño. Nunca más confundirás flujo de caja con ganancia.
+            </p>
+</div>
+</div>
+<ul class="space-y-2 pt-4 font-body-sm text-body-sm text-on-surface-variant">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Separación de sueldo del dueño vs utilidad</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Detección de gastos vampiro que desangran tu caja</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Hoja práctica de proyección financiera mensual</li>
+</ul>
+</div>
+<!-- Bento 3: Decisiones Ejecutivas -->
+<div class="rounded-2xl bg-surface-card p-6 md:p-8 flex flex-col justify-between space-y-space-md hover:bg-surface-card-hover transition-all duration-300 group">
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-xl bg-primary-container/20 text-accent-electric flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">trending_up</span>
+</div>
+<div class="space-y-2">
+<span class="font-label-sm text-label-sm text-accent-electric font-mono">Pilar 03</span>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Toma de Decisiones Ejecutivas con Datos</h3>
+<p class="font-body-md text-body-md text-text-secondary">
+              Despídete del "yo creo que nos fue bien". Analiza tendencias, identifica clientes estrella y sabe exactamente cuándo es seguro reinvertir, contratar o pausar gastos.
+            </p>
+</div>
+</div>
+<ul class="space-y-2 pt-4 font-body-sm text-body-sm text-on-surface-variant">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Métricas críticas (KPIs) explicadas en español simple</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Automatización de cobranza y facturación limpia</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent-electric text-sm">done</span> Plan de acción de 7 días para ordenar tu empresa</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- CLARVO BRAND AUTHORITY SECTION -->
+<section class="w-full bg-surface-canvas py-space-2xl relative overflow-hidden">
+<div class="max-w-7xl mx-auto px-gutter grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center">
+<!-- Visual Device Mockup -->
+<div class="lg:col-span-6 relative">
+<div class="rounded-2xl bg-gradient-to-br from-surface-elevated to-surface-deep p-4 md:p-6 shadow-2xl space-y-4">
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-extrabold text-text-primary">CLARV</span>
+<span class="font-headline-sm text-headline-sm font-extrabold text-accent-electric">O</span>
+<span class="text-xs px-2 py-0.5 rounded bg-primary-container/30 text-accent-electric font-mono ml-2">v2.4 PRO</span>
+</div>
+<span class="font-label-sm text-label-sm text-accent-success flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-accent-success"></span> En Línea
+            </span>
+</div>
+<!-- Feature Cards Grid inside Authority Mockup -->
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3.5 rounded-xl bg-surface-card/90 space-y-1">
+<div class="flex items-center gap-2 text-accent-electric">
+<span class="material-symbols-outlined text-xl">bar_chart</span>
+<span class="font-label-md text-label-md font-bold">Visualiza</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">El estado de tu negocio en tiempo real desde tu móvil o laptop.</p>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-card/90 space-y-1">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-xl">group</span>
+<span class="font-label-md text-label-md font-bold">Gestiona</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">Tus clientes y cobranzas recurrentes sin fricciones ni retrasos.</p>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-card/90 space-y-1">
+<div class="flex items-center gap-2 text-accent-azure">
+<span class="material-symbols-outlined text-xl">receipt_long</span>
+<span class="font-label-md text-label-md font-bold">Factura</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">De forma ágil, timbrado fiscal sin errores y en pocos clics.</p>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-card/90 space-y-1">
+<div class="flex items-center gap-2 text-accent-success">
+<span class="material-symbols-outlined text-xl">lock_clock</span>
+<span class="font-label-md text-label-md font-bold">Controla</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">Tu inventario y stock crítico con trazabilidad milimétrica.</p>
+</div>
+</div>
+<!-- Quote inside Mockup -->
+<div class="p-4 rounded-xl bg-surface-deep/80 text-center">
+<span class="font-title-lg text-title-lg text-text-primary font-semibold block">
+              "Un emprendedor con claridad, llega más lejos."
+            </span>
+<span class="font-label-sm text-label-sm text-text-muted mt-1 block">Filosofía Clarvo by ADDV</span>
+</div>
+</div>
+</div>
+<!-- Text Content Authority -->
+<div class="lg:col-span-6 space-y-space-md">
+<div class="space-y-space-xs">
+<span class="font-label-sm text-label-sm text-accent-electric tracking-widest uppercase font-bold">MÁS QUE UN SISTEMA</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">El control integral que tu negocio siempre necesitó</h2>
+<p class="font-body-lg text-body-lg text-text-secondary">
+            Estamos afinando cada detalle para darte la mejor experiencia operativa. En esta masterclass te enseñamos el método conceptual y cómo estructurarlo para ordenar y escalar tus operaciones comerciales.
+          </p>
+</div>
+<div class="space-y-3">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-accent-electric/10 text-accent-electric flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-lg">verified_user</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-text-primary">Diseñado para la realidad de México e Hispanoamérica</h4>
+<p class="font-body-sm text-body-sm text-text-secondary">Adaptado al ritmo real del comercio, retail, servicios y negocios locales.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-accent-electric/10 text-accent-electric flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-lg">speed</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-text-primary">Curva de aprendizaje cero</h4>
+<p class="font-body-sm text-body-sm text-text-secondary">Olvídate de sistemas ERP aburridos y obsoletos de los 90s. Claridad visual instantánea.</p>
+</div>
+</div>
+</div>
+<!-- WhatsApp VIP Teaser Pod -->
+<div class="p-5 rounded-xl bg-surface-elevated/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div class="space-y-1">
+<span class="font-label-md text-label-md text-text-primary font-bold block">¿Quieres ser pionero de CLARVO?</span>
+<span class="font-body-sm text-body-sm text-text-secondary">Entérate de las novedades y lanzamientos antes que nadie.</span>
+</div>
+<a class="px-5 py-2.5 rounded-full bg-surface-card hover:bg-surface-card-hover text-accent-electric font-label-md text-label-md font-bold whitespace-nowrap transition-colors flex items-center gap-1.5 shadow-sm" href="https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o" rel="noopener noreferrer" target="_blank">
+<span>Seguir canal</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQS ACCORDION SECTION -->
+<section class="w-full max-w-4xl mx-auto px-gutter py-space-2xl space-y-space-lg" id="faqs">
+<div class="text-center space-y-space-xs">
+<span class="font-label-sm text-label-sm text-accent-electric tracking-widest uppercase font-bold">Dudas Habituales</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">Preguntas Frecuentes</h2>
+<p class="font-body-md text-body-md text-text-secondary">Todo lo que necesitas saber antes de ingresar a la masterclass.</p>
+</div>
+<!-- Accordion Items -->
+<div class="space-y-3">
+<!-- FAQ 1 -->
+<div class="faq-item rounded-xl bg-surface-card transition-colors">
+<button class="faq-toggle w-full p-5 text-left flex items-center justify-between gap-4" type="button">
+<span class="font-title-lg text-title-lg text-text-primary font-semibold">¿Por qué esta Masterclass es 100% gratuita?</span>
+<span class="material-symbols-outlined text-accent-electric faq-icon transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-5 pb-5 font-body-md text-body-md text-text-secondary">
+          Nuestra misión en Clarvo es erradicar la mortandad prematura de negocios por falta de orden financiero. Esta clase es nuestra manera de presentarte el método de control operativo sin barreras de entrada. Si al final ves el valor, podrás conocer cómo nuestras soluciones te acompañan.
+        </div>
+</div>
+<!-- FAQ 2 -->
+<div class="faq-item rounded-xl bg-surface-card transition-colors">
+<button class="faq-toggle w-full p-5 text-left flex items-center justify-between gap-4" type="button">
+<span class="font-title-lg text-title-lg text-text-primary font-semibold">¿Por qué es necesario unirme al canal oficial de WhatsApp?</span>
+<span class="material-symbols-outlined text-accent-electric faq-icon transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-5 pb-5 font-body-md text-body-md text-text-secondary">
+          Los correos suelen irse a spam o promociones. Para garantizar que tengas el enlace directo de la sala de Zoom 15 minutos antes y recibas la Hoja de Trabajo de Utilidad Real, centralizamos la entrega vía WhatsApp. No es un grupo ruidoso, sino un canal oficial unidireccional y privado.
+        </div>
+</div>
+<!-- FAQ 3 -->
+<div class="faq-item rounded-xl bg-surface-card transition-colors">
+<button class="faq-toggle w-full p-5 text-left flex items-center justify-between gap-4" type="button">
+<span class="font-title-lg text-title-lg text-text-primary font-semibold">¿Me servirá si apenas estoy empezando o vendo por redes sociales?</span>
+<span class="material-symbols-outlined text-accent-electric faq-icon transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-5 pb-5 font-body-md text-body-md text-text-secondary">
+          Totalmente. Es el mejor momento. Empezar ordenado desde el día uno evita que adquieras malos hábitos financieros que luego cuestan cientos de miles de pesos resolver cuando el negocio comience a facturar alto volumen.
+        </div>
+</div>
+<!-- FAQ 4 -->
+<div class="faq-item rounded-xl bg-surface-card transition-colors">
+<button class="faq-toggle w-full p-5 text-left flex items-center justify-between gap-4" type="button">
+<span class="font-title-lg text-title-lg text-text-primary font-semibold">¿Habrá repetición o grabación grabada disponible?</span>
+<span class="material-symbols-outlined text-accent-electric faq-icon transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-5 pb-5 font-body-md text-body-md text-text-secondary">
+          Priorizamos a quienes asisten en directo para resolver dudas de sus negocios específicos durante el bloque de preguntas y respuestas. La grabación solo se comparte por 24 horas exclusivamente dentro del canal de WhatsApp.
+        </div>
+</div>
+</div>
+</section>
+<!-- FINAL CALL TO ACTION POD -->
+<section class="w-full max-w-5xl mx-auto px-gutter pb-space-3xl">
+<div class="rounded-3xl bg-gradient-to-r from-primary-container/20 via-surface-elevated to-surface-card p-8 md:p-12 text-center space-y-space-md shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative overflow-hidden">
+<div class="space-y-space-xs max-w-2xl mx-auto">
+<span class="font-label-sm text-label-sm text-accent-electric uppercase font-bold tracking-widest">Toma la Decisión Hoy</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary">
+          No adivines. No pierdas. <span class="text-accent-electric">Toma el control.</span>
+</h2>
+<p class="font-body-lg text-body-lg text-text-secondary">
+          40 minutos que pueden redefinir el futuro financiero de tu empresa este año.
+        </p>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-space-md pt-2">
+<a class="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-primary-container to-secondary-container text-text-primary font-label-lg text-label-lg font-extrabold shadow-[0_8px_30px_rgba(0,98,255,0.5)] hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2" href="#registro">
+<span>Apartar mi lugar gratuito ahora</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto px-6 py-4 rounded-full bg-surface-card hover:bg-surface-card-hover text-on-surface font-label-lg text-label-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm" href="https://whatsapp.com/channel/0029VbDBw54G8l59H2IDES1o" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-accent-success text-lg">chat</span>
+<span>Ir al WhatsApp Clarvo</span>
+</a>
+</div>
+<div class="pt-4 flex items-center justify-center gap-4 text-text-muted font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-accent-success">verified</span> 100% Online</span>
+<span>•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-accent-success">verified</span> Sin costo de inscripción</span>
+<span>•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-accent-success">verified</span> Certificado simbólico Clarvo</span>
+</div>
+</div>
+</section>
+<!-- STICKY BOTTOM BAR CONVERSION TRIGGER (Mobile / Tablet / Responsive) -->
+<aside class="fixed bottom-4 left-4 right-4 max-w-3xl mx-auto z-40 bg-surface-card/95 backdrop-blur-md p-3 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.8)] flex items-center justify-between gap-3 transform translate-y-28 transition-transform duration-300" id="sticky-bar">
+<div class="flex items-center gap-2.5 pl-3">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-success opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-success"></span>
+</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-primary font-bold leading-tight">Masterclass Online Gratuita</span>
+<span class="font-label-sm text-label-sm text-text-muted hidden sm:block">Quedan pocos cupos para la sala en vivo</span>
+</div>
+</div>
+<a class="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-container to-secondary-container text-text-primary font-label-md text-label-md font-bold hover:scale-105 active:scale-95 transition-transform flex items-center gap-1.5 shrink-0 shadow-md" href="#registro">
+<span>Reservar Gratis</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</aside>
+</div>
+<script>
+  // STEP FORM LOGIC & PROGRESS BAR BEHAVIOR
+  const btnSubmitStep1 = document.getElementById('btn-submit-step1');
+  const btnBackStep1 = document.getElementById('btn-back-step1');
+  const step1Form = document.getElementById('step-1-form');
+  const step2Confirm = document.getElementById('step-2-confirmation');
+  const progressBar = document.getElementById('progress-bar');
+  const progressPercent = document.getElementById('progress-percent');
+  const stepLabel = document.getElementById('step-label');
+
+  const leadName = document.getElementById('lead-name');
+  const leadEmail = document.getElementById('lead-email');
+  const leadIndustry = document.getElementById('lead-industry');
+
+  if (btnSubmitStep1) {
+    btnSubmitStep1.addEventListener('click', () => {
+      // Gentle validation
+      if (!leadName.value.trim()) {
+        leadName.focus();
+        leadName.classList.add('ring-2', 'ring-red-400');
+        return;
+      }
+      if (!leadEmail.value.trim() || !leadEmail.value.includes('@')) {
+        leadEmail.focus();
+        leadEmail.classList.add('ring-2', 'ring-red-400');
+        return;
+      }
+      leadName.classList.remove('ring-2', 'ring-red-400');
+      leadEmail.classList.remove('ring-2', 'ring-red-400');
+
+      // Transition to Step 2 (WhatsApp final confirmation)
+      step1Form.classList.add('hidden');
+      step2Confirm.classList.remove('hidden');
+      step2Confirm.classList.add('flex');
+
+      // Update progress bar
+      progressBar.style.width = '100%';
+      progressPercent.textContent = '100% Paso Final';
+      stepLabel.textContent = 'Paso 2 de 2: Acceso Seguro';
+    });
+  }
+
+  if (btnBackStep1) {
+    btnBackStep1.addEventListener('click', () => {
+      step2Confirm.classList.add('hidden');
+      step2Confirm.classList.remove('flex');
+      step1Form.classList.remove('hidden');
+
+      progressBar.style.width = '50%';
+      progressPercent.textContent = '50% Completado';
+      stepLabel.textContent = 'Paso 1 de 2: Datos de acceso';
+    });
+  }
+
+  // ACCORDION BEHAVIOR
+  document.querySelectorAll('.faq-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      const content = button.nextElementSibling;
+      const icon = button.querySelector('.faq-icon');
+      const isHidden = content.classList.contains('hidden');
+
+      // Close other opened FAQs
+      document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+
+      if (isHidden) {
+        content.classList.remove('hidden');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+
+  // STICKY BAR VISIBILITY ON SCROLL
+  const stickyBar = document.getElementById('sticky-bar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      stickyBar.classList.remove('translate-y-28');
+      stickyBar.classList.add('translate-y-0');
+    } else {
+      stickyBar.classList.add('translate-y-28');
+      stickyBar.classList.remove('translate-y-0');
+    }
+  });
+</script></main><footer class="w-full bg-surface-container-lowest pt-space-2xl pb-space-xl"><div class="max-w-7xl mx-auto px-gutter"><div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-lg pb-space-lg"><div class="space-y-space-xs max-w-lg"><div class="flex items-baseline tracking-tight"><span class="font-title-lg text-title-lg font-extrabold text-text-primary">CLARV</span><span class="font-title-lg text-title-lg font-extrabold text-accent-electric">O</span><span class="font-body-sm text-body-sm text-text-muted ml-2 font-medium">.mx</span></div><p class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight leading-snug">Transformamos negocios. Agregamos valor que trasciende.</p><p class="font-body-sm text-body-sm text-text-muted font-medium">Hecho para emprendedores con orgullo mexicano.</p></div><div class="flex flex-col sm:flex-row items-start sm:items-center gap-space-md"><div class="flex items-center gap-space-sm px-4 py-2.5 rounded-full bg-surface-card/80 backdrop-blur-md shadow-[0_8px_32px_-4px_rgba(0,0,0,0.5)]"><span class="material-symbols-outlined text-accent-success text-lg">verified</span><div class="flex flex-col"><span class="font-label-sm text-label-sm text-text-muted">Soporte Directo Concierge</span><span class="font-label-md text-label-md text-text-primary font-semibold">Canal de WhatsApp Verificado</span></div><span class="material-symbols-outlined text-accent-electric text-base ml-2">chat</span></div></div></div><div class="flex flex-col md:flex-row items-center justify-between gap-space-md pt-space-lg"><div class="flex flex-wrap items-center gap-space-md"><a class="font-label-md text-label-md text-text-muted hover:text-on-surface transition-colors duration-150" data-path="aviso-de-privacidad" href="#">Aviso de Privacidad</a><a class="font-label-md text-label-md text-text-muted hover:text-on-surface transition-colors duration-150" data-path="terminos-y-condiciones" href="#">Términos y Condiciones</a><a class="font-label-md text-label-md text-text-muted hover:text-on-surface transition-colors duration-150" data-path="politica-de-cookies" href="#">Política de Cookies</a><a class="font-label-md text-label-md text-text-muted hover:text-on-surface transition-colors duration-150" data-path="codigo-de-etica" href="#">Código de Ética</a></div><div class="flex items-center gap-space-xs font-label-md text-label-md text-text-muted"><span class="material-symbols-outlined text-sm text-text-muted">copyright</span><span>Clarvo by ADDV. Todos los derechos reservados.</span></div></div></div></footer></body></html>
