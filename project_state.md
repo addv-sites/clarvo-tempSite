@@ -593,3 +593,36 @@ borrar por el usuario.
   vez de asumir o reintentar el paste indefinidamente.
 - Todo cambio visual de esta sesión (cristal, logo, tamaños) se verificó con
   build real + navegador (Chrome), nunca solo "el build no truena".
+
+## Segmento 6b — Placeholder del nombre + auto-join al canal con countdown (2026-09-21)
+
+- Placeholder del campo "Nombre completo" en el formulario de `/masterclass`
+  cambiado de "Ej. Antonio Prado" a "Ej. Juan Hernández" (dato de ejemplo
+  neutro, pedido explícito del usuario). Commit aparte (`41397df`).
+- **Auto-unión al canal de WhatsApp tras 8s en el paso 2:** el usuario pidió
+  que, tras completar el registro, se dispare solo el evento de unirse al
+  canal (antes requería clic manual en "Unirme al canal para confirmar").
+  - **Limitación técnica explicada antes de implementar:** abrir pestaña
+    nueva (`window.open`/`target="_blank"`) disparado por un `setTimeout`
+    sin gesto directo del usuario lo bloquean los navegadores modernos
+    (popup blocker) — un timer de 8s rompe la cadena de "gesto de usuario"
+    que exige Chrome/Firefox/Safari.
+  - **Solución acordada con el usuario (de 3 opciones presentadas):**
+    countdown visible ("Te unimos al canal en 8s...") que redirige la
+    **misma pestaña** (`window.location.href`, no `window.open`) al llegar
+    a 0 — evita el bloqueo de popups por completo. El botón manual sigue
+    disponible durante la espera: un clic real ahí sí abre pestaña nueva
+    (`target="_blank"`, comportamiento sin cambios) y cancela el timer.
+  - Implementado en `Hero.astro`: `id="mc-whatsapp-link"` en el botón,
+    `<span id="mc-countdown-seconds">` para el número regresivo (con
+    `aria-live="polite"` + texto `sr-only` que anuncia una sola vez al
+    inicio, en vez de anunciar cada segundo — evita ruido excesivo para
+    lectores de pantalla). Script: `startWhatsappCountdown()` se dispara
+    al mostrar el paso 2 (tras el submit exitoso), `cancelWhatsappCountdown()`
+    se llama al hacer clic manual en el botón o al volver al paso 1
+    ("Modificar mis datos de registro") — evita que el timer dispare un
+    redirect después de que el usuario ya se fue o decidió regresar.
+  - Verificado end-to-end en navegador real: formulario completo → paso 2
+    → countdown baja de 8 a 0 → la pestaña navega sola a
+    `whatsapp.com/channel/...` sin intervención manual, confirmado por el
+    cambio de URL/título de la pestaña capturado en la prueba.

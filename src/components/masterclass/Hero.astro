@@ -265,6 +265,7 @@ const industries = [
             <div class="pulse-wrap relative">
               <span class="pulse-ring absolute inset-0 rounded-full" aria-hidden="true"></span>
               <a
+                id="mc-whatsapp-link"
                 href={WHATSAPP_CHANNEL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -274,8 +275,12 @@ const industries = [
                 Unirme al canal para confirmar
               </a>
             </div>
-            <p class="text-xs text-slate-400">
-              Se abre en WhatsApp. No exponemos tu número ni recibes llamadas intrusivas.
+            <p class="text-xs text-slate-400" aria-live="polite">
+              <span class="sr-only">Te uniremos automáticamente al canal en unos segundos.</span>
+              <span aria-hidden="true">
+                Te unimos al canal en <span id="mc-countdown-seconds" class="font-semibold text-white">8</span>s
+                — o dale clic arriba para ir ahora.
+              </span>
             </p>
             <button
               type="button"
@@ -351,6 +356,41 @@ const industries = [
     const stepLabel = document.querySelector<HTMLSpanElement>("#mc-step-label")!;
     const backBtn = form.querySelector<HTMLButtonElement>("#mc-back");
     const honeypot = form.querySelector<HTMLInputElement>("#mc-hp");
+    const whatsappLink = form.querySelector<HTMLAnchorElement>("#mc-whatsapp-link");
+    const countdownSecondsEl = document.querySelector<HTMLSpanElement>("#mc-countdown-seconds");
+
+    let countdownTimeout: ReturnType<typeof setTimeout> | undefined;
+    let countdownInterval: ReturnType<typeof setInterval> | undefined;
+
+    function cancelWhatsappCountdown() {
+      clearTimeout(countdownTimeout);
+      clearInterval(countdownInterval);
+    }
+
+    function startWhatsappCountdown() {
+      const whatsappUrl = form!.dataset.whatsapp;
+      if (!whatsappUrl) return;
+
+      cancelWhatsappCountdown();
+      let remaining = 8;
+      if (countdownSecondsEl) countdownSecondsEl.textContent = String(remaining);
+
+      countdownInterval = setInterval(() => {
+        remaining -= 1;
+        if (countdownSecondsEl) countdownSecondsEl.textContent = String(Math.max(remaining, 0));
+      }, 1000);
+
+      // Redirige la misma pestaña (no window.open): un popup disparado por un
+      // setTimeout, sin gesto directo del usuario, lo bloquean todos los
+      // navegadores modernos. El botón manual (clic real) sí abre pestaña
+      // nueva vía target="_blank" y cancela este timer al usarse.
+      countdownTimeout = setTimeout(() => {
+        cancelWhatsappCountdown();
+        window.location.href = whatsappUrl;
+      }, 8000);
+    }
+
+    whatsappLink?.addEventListener("click", cancelWhatsappCountdown);
 
     const fieldEls = {
       name: form.querySelector<HTMLInputElement>("#mc-name")!,
@@ -422,9 +462,11 @@ const industries = [
       progressBar.style.width = "100%";
       progressPercent.textContent = "100%";
       stepLabel.textContent = "Paso 2 de 2 · Acceso seguro";
+      startWhatsappCountdown();
     });
 
     backBtn?.addEventListener("click", () => {
+      cancelWhatsappCountdown();
       step2.classList.add("hidden");
       step2.classList.remove("flex");
       step1.classList.remove("hidden");
