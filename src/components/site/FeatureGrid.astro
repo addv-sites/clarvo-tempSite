@@ -1,0 +1,41 @@
+---
+import { TrendingUp, Users, FileText, Package, Wallet, WifiOff, Palette, Store, History, Sparkles } from "@lucide/astro";
+
+const features = [
+  { icon: TrendingUp, title: "Resumen de tu negocio", desc: "Conoce tus ventas, gastos y utilidad en tiempo real." },
+  { icon: Users, title: "Clientes y cobros", desc: "Dale seguimiento y cobra lo que te deben." },
+  { icon: FileText, title: "Facturación fácil", desc: "Todo validado con el SAT. Sin memorizar códigos." },
+  { icon: Package, title: "Inventario inteligente", desc: "Controla tu stock o servicios sin complicaciones." },
+  { icon: Wallet, title: "Control de gastos", desc: "Categoriza, adjunta comprobantes y conoce en qué se va tu dinero." },
+  { icon: WifiOff, title: "Funciona sin internet", desc: "Registra y sigue operando aunque no haya señal." },
+  { icon: Palette, title: "Tu marca, tu portal", desc: "Personaliza con tu logo, colores y dominio." },
+  { icon: Store, title: "Multi-sucursal", desc: "Crece sin cambiar de sistema." },
+  { icon: History, title: "Registro de acciones", desc: "Siempre sabes quién, cuándo y qué." },
+  { icon: Sparkles, title: "Fácil de usar", desc: "Diseñado para emprendedores, no para expertos en sistemas." },
+];
+---
+
+<section id="funciones" class="bg-white py-20 text-surface-deep sm:py-28">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold tracking-wide text-blue-600 uppercase">
+        Todo lo que necesitas, en un solo lugar
+      </p>
+      <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+        Funciones que simplifican tu día y hacen crecer tu negocio
+      </h2>
+    </div>
+
+    <div class="mt-14 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+      {features.map(({ icon: Icon, title, desc }, i) => (
+        <div class="reveal" style={`transition-delay: ${(i % 5) * 60}ms`}>
+          <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <Icon class="h-6 w-6" />
+          </span>
+          <p class="mt-4 font-semibold text-surface-deep">{title}</p>
+          <p class="mt-1 text-sm leading-relaxed text-slate-600">{desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

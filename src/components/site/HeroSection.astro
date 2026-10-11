@@ -1,0 +1,66 @@
+---
+// Segmento 2: escena 3D real (laptop + tablet + celular, R3F) — ver
+// src/components/three/HeroScene.tsx. Pantallas con placeholder honesto
+// (mismos números de Site.png); Segmento 3 las reemplaza por la
+// reconstrucción fiel de capClar/ sin tocar la escena ni el layout.
+// client:visible: la isla solo hidrata cuando el hero entra en viewport,
+// nunca bloquea el render inicial del resto de la página.
+import HeroScene from "../three/HeroScene";
+---
+
+<section id="inicio" class="relative overflow-hidden pt-16 pb-20 sm:pt-20 lg:pb-28">
+  <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:gap-8">
+    <div class="reveal">
+      <p class="text-sm font-semibold tracking-wide text-accent-electric uppercase">
+        Más tiempo para lo que importa
+      </p>
+      <h1 class="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight text-text-primary sm:text-5xl lg:text-[3.5rem]">
+        Tu negocio <span class="text-accent-electric">bajo control.</span>
+      </h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary">
+        Organiza, administra y haz crecer tu negocio en un solo lugar. Ventas,
+        clientes, inventario, gastos, reportes y facturas, sin complicaciones.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a
+          href="#planes"
+          class="cta-shine inline-flex items-center gap-2 rounded-full bg-accent-electric px-7 py-3.5 text-base font-semibold text-surface-deep transition hover:brightness-110"
+        >
+          Comienza gratis
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <button
+          type="button"
+          class="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-base font-semibold text-text-secondary opacity-60"
+          aria-disabled="true"
+          title="Video pendiente de producción — placeholder honesto, no hay archivo real aún"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Ver video (próximamente)
+        </button>
+      </div>
+
+      <dl class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        {[
+          { title: "Fácil de usar", desc: "Sin conocimientos técnicos" },
+          { title: "Seguro y confiable", desc: "Tu información siempre protegida" },
+          { title: "Disponible en la nube y sin internet", desc: "Tu negocio siempre funciona" },
+        ].map((item) => (
+          <div>
+            <dt class="font-semibold text-text-primary">{item.title}</dt>
+            <dd class="mt-1 text-sm text-text-secondary">{item.desc}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    <div class="reveal" style="transition-delay: 120ms">
+      <HeroScene client:visible />
+    </div>
+  </div>
+</section>

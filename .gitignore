@@ -26,3 +26,15 @@ pnpm-debug.log*
 # Capturas reales del dashboard — repo público, no subir hasta confirmar
 # que son datos demo/seguros de mostrar (ver public/images/dashboard/README.md)
 public/images/dashboard/reference/
+
+# Ruflo local secrets and runtime data
+.env.local
+.env.*.local
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+.openai-key.local
+
+# Runtime cache / personal-machine config — no es código del sitio
+.swarm/
+.claude/settings.local.json

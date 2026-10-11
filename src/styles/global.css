@@ -1,9 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
+  /* Tokens originales (en uso por /masterclass) — no tocar valores. */
   --color-brand-cyan: #2fd2ff;
   --color-brand-card: #0c1836;
   --color-brand-border: #1c2e5c;
+
+  /* "Clarvo Precision Dark" — sistema completo del sitio comercial,
+     origen: .old/stitch/DESIGN.md (extraído de Site.png, no son códigos
+     oficiales de marca confirmados, ver master prompt sección 3). */
+  --color-surface-deep: #030b1e;
+  --color-surface-canvas: #071126;
+  --color-surface: #091326;
+  --color-surface-card: #0a1931;
+  --color-surface-card-hover: #0e2242;
+  --color-surface-elevated: #10214b;
+  --color-surface-container-low: #121b2f;
+  --color-surface-container: #161f33;
+  --color-surface-container-high: #212a3e;
+  --color-surface-container-highest: #2c3549;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  --color-accent-electric: #00d2ff;
+  --color-accent-azure: #18b8e6;
+  --color-accent-success: #10b981;
+
+  --color-border-translucent: rgba(255, 255, 255, 0.08);
+  --color-border-specular: rgba(0, 210, 255, 0.25);
+
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Reveal-on-scroll: composite-only (opacity + transform), ver skill low-impact-motion.
@@ -54,5 +83,64 @@
 @media (prefers-reduced-motion: reduce) {
   .cta-shine::after {
     display: none;
+  }
+}
+
+/* Hero 3D: encendido de pantalla + construcción del dashboard (Propuesta 1
+   del artifact de animaciones). Solo opacity/transform, ver skill
+   low-impact-motion. El componente padre (HeroScene) ya no monta este árbol
+   si prefers-reduced-motion es "reduce", pero se mantiene el guard por
+   consistencia con el resto del archivo. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes clarvo-screen-power {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: var(--screen-opacity, 1);
+    }
+  }
+
+  .hero-screen-power {
+    opacity: 0;
+    /* 0.4s / 1.18 * 1.2 (+18% motion continuo, luego -20% extra en el
+       ensamblaje al cargar, pedido tras ver el +18% en acción) */
+    animation: clarvo-screen-power 0.407s ease forwards;
+  }
+
+  @keyframes clarvo-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hero-reveal {
+    opacity: 0;
+    /* 0.45s / 1.18 * 1.2 (+18% motion continuo, luego -20% extra en el
+       ensamblaje al cargar, pedido tras ver el +18% en acción) */
+    animation: clarvo-reveal 0.457s ease forwards;
+  }
+
+  /* Pulso al recalcular el precio (toggle mensual/anual en PricingSection). */
+  @keyframes clarvo-price-pulse {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .price-pulse {
+    display: inline-block;
+    animation: clarvo-price-pulse 0.42s ease;
   }
 }

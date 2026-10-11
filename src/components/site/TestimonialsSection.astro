@@ -1,0 +1,62 @@
+---
+// Testimonios reproducidos tal como aparecen en Site.png (referencia
+// visual aprobada) — master prompt sección 11 permite reproducir contenido
+// claramente visible en la referencia. No inventados ni ampliados.
+const testimonials = [
+  {
+    quote:
+      "Antes llevaba mis ventas en un Excel y siempre tenía errores. Con CLARVO todo está en un solo lugar y ahora sé exactamente cuánto gano.",
+    name: "Mariana López",
+    role: "Tienda de regalos",
+  },
+  {
+    quote:
+      "Me ahorra horas de trabajo. Ahora facturo, controlo mi inventario y doy un mejor servicio a mis clientes.",
+    name: "Carlos Méndez",
+    role: "Consultor independiente",
+  },
+  {
+    quote:
+      "Es muy fácil de usar y el soporte siempre me ayuda. Mi negocio se ve más profesional y mis clientes lo notan.",
+    name: "Ana Torres",
+    role: "Boutique de moda",
+  },
+];
+---
+
+<section id="testimonios" class="bg-surface py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold tracking-wide text-accent-electric uppercase">
+        Historias reales, negocios reales
+      </p>
+      <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
+        Emprendedores que ya toman decisiones con claridad
+      </h2>
+    </div>
+
+    <div class="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-3">
+      {testimonials.map((t, i) => (
+        <figure class="reveal rounded-2xl border border-border-translucent bg-surface-card p-6" style={`transition-delay: ${i * 90}ms`}>
+          <div class="flex gap-0.5 text-accent-electric" aria-hidden="true">
+            {Array.from({ length: 5 }).map(() => (
+              <svg viewBox="0 0 20 20" class="h-4 w-4" fill="currentColor"><path d="M10 1.5l2.6 5.6 6 .7-4.4 4.1 1.2 6-5.4-3-5.4 3 1.2-6L1.4 7.8l6-.7z" /></svg>
+            ))}
+          </div>
+          <blockquote class="mt-4 text-sm leading-relaxed text-text-secondary">
+            “{t.quote}”
+          </blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-sm font-semibold text-text-primary">
+              {t.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+            </span>
+            <div>
+              <p class="text-sm font-semibold text-text-primary">{t.name}</p>
+              <p class="text-xs text-text-muted">{t.role}</p>
+            </div>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>

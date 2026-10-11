@@ -1,0 +1,38 @@
+---
+import Logo from "../Logo.astro";
+
+const navLinks = [
+  { href: "#inicio", label: "Inicio" },
+  { href: "#beneficios", label: "Beneficios" },
+  { href: "#funciones", label: "Funciones" },
+  { href: "#planes", label: "Planes" },
+  { href: "#testimonios", label: "Testimonios" },
+  { href: "#faq", label: "FAQ" },
+];
+---
+
+<header class="sticky top-0 z-40 border-b border-white/5 bg-surface-deep/80 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
+    <a href="#inicio" class="shrink-0">
+      <Logo size="footer" />
+    </a>
+
+    <nav class="hidden items-center gap-7 text-sm font-medium text-text-secondary md:flex" aria-label="Navegación principal">
+      {navLinks.map((link) => (
+        <a href={link.href} class="transition hover:text-white">
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <a
+      href="#planes"
+      class="cta-shine inline-flex shrink-0 items-center gap-2 rounded-full bg-accent-electric px-5 py-2.5 text-sm font-semibold text-surface-deep transition hover:brightness-110"
+    >
+      Comienza ahora
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </a>
+  </div>
+</header>

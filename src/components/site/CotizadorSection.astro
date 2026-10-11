@@ -1,0 +1,209 @@
+---
+// Segmento 4: cotizador "a la medida" — sin precio calculado (confirmado
+// con el usuario 2026-10-09). Recolecta empresa + necesidades y lo manda
+// al mismo endpoint de Apps Script que masterclass (ver
+// docs/apps-script/code.gs), con origen "cotizador" para que ADDV reciba
+// el correo "Clarvo Cotización — {empresa}" y quede en su propia pestaña.
+import { publicEnv } from "../../config/publicEnv";
+const ENDPOINT = publicEnv.leadsEndpoint ?? "";
+
+const modulos = [
+  "Facturación / CFDI",
+  "Ventas",
+  "Cuentas por cobrar",
+  "Gastos",
+  "Inventario",
+  "Multi-sucursal",
+  "Varios usuarios",
+  "Reportes avanzados",
+  "Personalización de marca",
+  "Auditoría",
+  "Operación offline",
+  "Onboarding guiado",
+];
+---
+
+<section id="cotizador-a-medida" class="bg-surface-canvas py-20 sm:py-28">
+  <div class="mx-auto max-w-3xl px-6">
+    <div class="reveal text-center">
+      <p class="text-sm font-semibold tracking-wide text-accent-electric uppercase">A la medida</p>
+      <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
+        Arma tu plan a la medida
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed text-text-secondary">
+        Cuéntanos qué necesita tu negocio. No calculamos un precio
+        automático — esto llega directo a nuestro equipo y te preparamos
+        una propuesta personalizada.
+      </p>
+    </div>
+
+    <form
+      id="cotizador-form"
+      data-endpoint={ENDPOINT}
+      novalidate
+      class="reveal mt-10 rounded-3xl border border-border-translucent bg-surface-card p-6 sm:p-8"
+      style="transition-delay: 120ms"
+    >
+      <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="cz-empresa" class="text-sm font-medium text-text-secondary">Empresa</label>
+          <input
+            id="cz-empresa"
+            type="text"
+            class="mt-1.5 w-full rounded-lg border border-border-translucent bg-surface-container-low px-3.5 py-2.5 text-text-primary placeholder:text-text-muted focus:border-accent-electric focus:outline-none"
+            placeholder="Ej. Panadería La Espiga"
+          />
+          <p class="mt-1 hidden text-xs text-red-400" data-error="empresa"></p>
+        </div>
+
+        <div>
+          <label for="cz-contacto" class="text-sm font-medium text-text-secondary">Tu nombre</label>
+          <input
+            id="cz-contacto"
+            type="text"
+            class="mt-1.5 w-full rounded-lg border border-border-translucent bg-surface-container-low px-3.5 py-2.5 text-text-primary placeholder:text-text-muted focus:border-accent-electric focus:outline-none"
+            placeholder="Ej. Juan Pérez"
+          />
+          <p class="mt-1 hidden text-xs text-red-400" data-error="nombreContacto"></p>
+        </div>
+
+        <div>
+          <label for="cz-correo" class="text-sm font-medium text-text-secondary">Correo</label>
+          <input
+            id="cz-correo"
+            type="email"
+            class="mt-1.5 w-full rounded-lg border border-border-translucent bg-surface-container-low px-3.5 py-2.5 text-text-primary placeholder:text-text-muted focus:border-accent-electric focus:outline-none"
+            placeholder="tu@negocio.com"
+          />
+          <p class="mt-1 hidden text-xs text-red-400" data-error="correo"></p>
+        </div>
+
+        <div>
+          <label for="cz-telefono" class="text-sm font-medium text-text-secondary">Teléfono</label>
+          <input
+            id="cz-telefono"
+            type="tel"
+            class="mt-1.5 w-full rounded-lg border border-border-translucent bg-surface-container-low px-3.5 py-2.5 text-text-primary placeholder:text-text-muted focus:border-accent-electric focus:outline-none"
+            placeholder="55 1234 5678"
+          />
+          <p class="mt-1 hidden text-xs text-red-400" data-error="telefono"></p>
+        </div>
+      </div>
+
+      <fieldset class="mt-6">
+        <legend class="text-sm font-medium text-text-secondary">¿Qué necesitas? (selecciona al menos una)</legend>
+        <div class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-3">
+          {modulos.map((m) => (
+            <label class="flex items-center gap-2 text-sm text-text-secondary">
+              <input type="checkbox" name="modulos" value={m} class="h-4 w-4 rounded border-border-translucent accent-accent-electric" />
+              {m}
+            </label>
+          ))}
+        </div>
+        <p class="mt-1 hidden text-xs text-red-400" data-error="modulos"></p>
+      </fieldset>
+
+      <div class="mt-6">
+        <label for="cz-notas" class="text-sm font-medium text-text-secondary">Notas (opcional)</label>
+        <textarea
+          id="cz-notas"
+          rows="3"
+          class="mt-1.5 w-full rounded-lg border border-border-translucent bg-surface-container-low px-3.5 py-2.5 text-text-primary placeholder:text-text-muted focus:border-accent-electric focus:outline-none"
+          placeholder="Cuéntanos algo más sobre tu negocio — cuántas sucursales, cuántos usuarios, etc."
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="cta-shine mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent-electric px-7 py-3.5 text-base font-semibold text-surface-deep transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+      >
+        Enviar a ventas
+      </button>
+
+      <p class="mt-4 hidden rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300" data-success>
+        Listo — recibimos tu solicitud. Nuestro equipo te escribe pronto con una propuesta.
+      </p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { validateCotizador, buildCotizadorPayload, type CotizadorFormData } from "../../lib/cotizadorForm";
+
+  const form = document.querySelector<HTMLFormElement>("#cotizador-form");
+  if (form) {
+    const fieldEls = {
+      empresa: form.querySelector<HTMLInputElement>("#cz-empresa")!,
+      nombreContacto: form.querySelector<HTMLInputElement>("#cz-contacto")!,
+      correo: form.querySelector<HTMLInputElement>("#cz-correo")!,
+      telefono: form.querySelector<HTMLInputElement>("#cz-telefono")!,
+    };
+    const notasEl = form.querySelector<HTMLTextAreaElement>("#cz-notas")!;
+    const honeypot = form.querySelector<HTMLInputElement>('input[name="website"]');
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const successEl = form.querySelector<HTMLElement>("[data-success]")!;
+
+    function setFieldError(key: string, message?: string) {
+      const el = form!.querySelector<HTMLElement>(`[data-error="${key}"]`);
+      if (!el) return;
+      el.textContent = message ?? "";
+      el.classList.toggle("hidden", !message);
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (honeypot && honeypot.value.trim() !== "") {
+        return;
+      }
+
+      const modulos = Array.from(
+        form.querySelectorAll<HTMLInputElement>('input[name="modulos"]:checked'),
+      ).map((el) => el.value);
+
+      const data: CotizadorFormData = {
+        empresa: fieldEls.empresa.value,
+        nombreContacto: fieldEls.nombreContacto.value,
+        correo: fieldEls.correo.value,
+        telefono: fieldEls.telefono.value,
+        modulos,
+        notas: notasEl.value,
+      };
+
+      const { valid, errors } = validateCotizador(data);
+      (["empresa", "nombreContacto", "correo", "telefono"] as const).forEach((key) =>
+        setFieldError(key, errors[key]),
+      );
+      setFieldError("modulos", errors.modulos);
+      if (!valid) return;
+
+      const endpoint = form.dataset.endpoint;
+      submitBtn.disabled = true;
+
+      if (endpoint) {
+        try {
+          // Mismo patrón fire-and-forget que /masterclass (Apps Script Web
+          // App no responde CORS legible; text/plain evita el preflight).
+          await fetch(endpoint, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(buildCotizadorPayload(data)),
+          });
+        } catch (error) {
+          console.warn("No se pudo enviar la cotización al endpoint de leads.", error);
+        }
+      } else {
+        console.warn(
+          "PUBLIC_LEADS_ENDPOINT no está configurado — la cotización no se envió a ningún lado.",
+        );
+      }
+
+      form.reset();
+      submitBtn.disabled = false;
+      successEl.classList.remove("hidden");
+    });
+  }
+</script>

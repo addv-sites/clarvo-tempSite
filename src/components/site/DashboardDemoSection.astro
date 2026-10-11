@@ -1,0 +1,52 @@
+---
+// Segmento 3: segunda sección de demostración, da continuidad visual al
+// hero y muestra el dashboard reconstruido con componentes reales
+// (HTML/SVG, no imagen) — ver master prompt sección 6 y
+// docs/product-screen-inventory.md para la fuente de cada dato.
+import DashboardScreen from "../dashboard/DashboardScreen";
+---
+
+<section class="bg-surface-canvas py-20 sm:py-28">
+  <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
+    <div class="reveal order-2 lg:order-1">
+      {/* Antes con aspect-ratio:4/3 fijo: el contenido (4 tarjetas + gráfica
+          + dona) no cabía en esa altura y la gráfica desbordaba sobre la
+          dona de abajo (reportado por el usuario). Alto automático = el
+          card mide exactamente lo que necesita su contenido. */}
+      <div class="overflow-hidden rounded-2xl border border-border-translucent shadow-2xl">
+        <DashboardScreen client:visible />
+      </div>
+      <p class="mt-3 text-xs text-text-muted">
+        Reconstrucción real a partir de capturas del producto — ver{" "}
+        <code class="text-text-secondary">docs/product-screen-inventory.md</code>.
+      </p>
+    </div>
+
+    <div class="reveal order-1 lg:order-2" style="transition-delay: 120ms">
+      <p class="text-sm font-semibold tracking-wide text-accent-electric uppercase">Así se ve tu negocio</p>
+      <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
+        Toda tu información financiera, en un solo lugar
+      </h2>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary">
+        Facturación, ventas sin timbrar y balance del mes a simple vista. Y
+        cuando algo se te debe, CLARVO te muestra exactamente qué tan viejo
+        es ese saldo — para que cobres antes de que se te olvide.
+      </p>
+
+      <ul class="mt-8 space-y-4">
+        <li class="flex items-start gap-3">
+          <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent-electric"></span>
+          <span class="text-text-secondary">
+            <strong class="text-text-primary">Utilidad neta mensual</strong> — tendencia real de los últimos meses, no solo el total de hoy.
+          </span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent-electric"></span>
+          <span class="text-text-secondary">
+            <strong class="text-text-primary">Antigüedad de saldos</strong> — sabes qué porcentaje de lo que te deben ya se venció hace más de 30 días.
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
