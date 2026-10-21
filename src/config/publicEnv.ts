@@ -30,4 +30,12 @@ export const publicEnv = {
   appUrl: readUrl(import.meta.env.PUBLIC_CLARVO_APP_URL),
   /** Endpoint de Apps Script que recibe leads de masterclass y cotizaciones. */
   leadsEndpoint: import.meta.env.PUBLIC_LEADS_ENDPOINT || null,
+  /**
+   * Site key de Cloudflare Turnstile para el widget del onboarding
+   * (hallazgo M-06, sonar_1.1.html, Fase D). El default es el site key
+   * PÚBLICO de prueba que documenta Cloudflare (siempre pasa, pensado
+   * para desarrollo/CI) — nunca un secreto real. Producción debe
+   * sobreescribirlo con el site key real del dashboard de Cloudflare.
+   */
+  turnstileSiteKey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
 };

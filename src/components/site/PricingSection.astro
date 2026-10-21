@@ -1,6 +1,7 @@
 ---
 import { Check } from "@lucide/astro";
 import { plans } from "../../data/plans";
+import OnboardingModal from "../onboarding/OnboardingModal";
 
 const money = (n: number) => n.toLocaleString("es-MX");
 ---
@@ -66,8 +67,9 @@ const money = (n: number) => n.toLocaleString("es-MX");
             ))}
           </ul>
 
-          <a
-            href="#cotizador-a-medida"
+          <button
+            type="button"
+            data-open-onboarding={plan.id}
             class:list={[
               "mt-8 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition",
               plan.featured
@@ -76,10 +78,20 @@ const money = (n: number) => n.toLocaleString("es-MX");
             ]}
           >
             {plan.cta}
-          </a>
+          </button>
         </div>
       ))}
     </div>
+
+    {/*
+      client:load, no client:visible: este componente renderiza `null`
+      mientras está cerrado (sin tamaño en el DOM), así que el
+      IntersectionObserver de client:visible nunca lo considera "visible"
+      y jamás hidrata — el listener de "clarvo:abrir-onboarding" no se
+      engancha y el CTA no hace nada. Necesita estar listo desde que
+      carga la página, no cuando se desplaza a la vista.
+    */}
+    <OnboardingModal client:load />
 
     <div class="reveal mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-border-translucent bg-surface-card px-6 py-5 sm:flex-row">
       <div class="flex items-center gap-3">
@@ -161,6 +173,21 @@ const money = (n: number) => n.toLocaleString("es-MX");
     btn.addEventListener("click", () => {
       const period = btn.dataset.periodBtn as "monthly" | "annual";
       setPeriod(period);
+    });
+  });
+
+  // Dispara el wizard de onboarding (OnboardingModal, isla React) con el
+  // plan y el ciclo de cobro que el visitante ya tenía seleccionado en
+  // esta misma sección — nunca le hace repetir esa elección.
+  document.querySelectorAll<HTMLButtonElement>("[data-open-onboarding]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const periodoActivo = document.querySelector<HTMLButtonElement>('[data-period-btn][aria-pressed="true"]');
+      const ciclo = periodoActivo?.dataset.periodBtn === "annual" ? "anual" : "mensual";
+      window.dispatchEvent(
+        new CustomEvent("clarvo:abrir-onboarding", {
+          detail: { planClave: btn.dataset.openOnboarding, ciclo },
+        })
+      );
     });
   });
 </script>
