@@ -1,0 +1,43 @@
+# docker-compose.prod.yml -- despliegue de produccion de clarvo.mx
+#
+# Contenedor propio, sin compartir red/volumen con ningun otro stack del
+# mismo VPS (incluido "control" de portalFac) -- solo nginx sirviendo el
+# build estatico de Astro. El nginx del HOST (fuera de Docker, con
+# certbot) es quien recibe trafico publico 80/443 y reenvia en plano a
+# este puerto, publicado unicamente en loopback (mismo patron que
+# portalFac/prod/docker-compose.prod.yml).
+#
+# Variables de build (PUBLIC_*) vienen de ".env" en este mismo directorio
+# (nunca se commitea -- ver .env.prod.example). Ninguna es secreta por
+# diseno (ver .env.example del repo): se hornean en el HTML/JS estatico,
+# no hay backend propio que las use en runtime.
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://clarvo.mx}
+        PUBLIC_GA_MEASUREMENT_ID: ${PUBLIC_GA_MEASUREMENT_ID:-}
+        PUBLIC_LEADS_ENDPOINT: ${PUBLIC_LEADS_ENDPOINT:-}
+        PUBLIC_CLARVO_API_BASE_URL: ${PUBLIC_CLARVO_API_BASE_URL:-}
+        PUBLIC_CLARVO_ONBOARDING_URL: ${PUBLIC_CLARVO_ONBOARDING_URL:-}
+        PUBLIC_CLARVO_APP_URL: ${PUBLIC_CLARVO_APP_URL:-}
+        PUBLIC_TURNSTILE_SITE_KEY: ${PUBLIC_TURNSTILE_SITE_KEY:-}
+    container_name: clarvo-site-web
+    restart: unless-stopped
+    mem_limit: 128m
+    ports:
+      - "127.0.0.1:${CLARVO_SITE_PORT:-8090}:80"
+    networks:
+      - clarvo-site-net
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+
+networks:
+  clarvo-site-net:
+    driver: bridge

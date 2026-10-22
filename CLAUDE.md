@@ -222,3 +222,23 @@ npx ruflo@latest doctor --fix
 > by default; `--ttl 0` to disable, `daemon status --all` to audit running daemons).
 
 **Agent tool** handles execution (agents, files, code, git). **MCP tools** handle coordination (swarm, memory, hooks). **CLI** is the same via Bash.
+
+## Despliegue — Docker en VPS (2026-10-22, decisión explícita del usuario)
+
+El sitio dejó de desplegarse por GitHub Pages — ahora corre en su propio
+contenedor Docker (nginx + build estático de Astro), en el mismo VPS
+donde vive `control` de portalFac, **sin compartir red ni volumen con
+ningún otro stack** (patrón: publicado solo en loopback, nginx del host
+fuera de Docker con certbot hace el reverse proxy por dominio — mismo
+criterio que `portalFac/prod/docker-compose.prod.yml`).
+
+Archivos: `Dockerfile`, `nginx.conf`, `docker-compose.prod.yml`,
+`.env.prod.example`, `deploy.sh` (primer despliegue), `actualizar.sh`
+(actualizaciones). `.github/workflows/ci.yml` reemplazó a `deploy.yml`:
+solo build+test+smoke test de la imagen, ya no publica a Pages.
+`public/CNAME` se quitó (específico de Pages).
+
+**Google Sheets sin cambios**: el formulario de leads sigue siendo un
+fetch client-side a `PUBLIC_LEADS_ENDPOINT` (Google Apps Script → Sheet +
+correo) — el sitio sigue 100% estático, sin backend propio, nada de esto
+se tocó al dockerizar. Ver README.md, sección "Despliegue (Docker, VPS)".

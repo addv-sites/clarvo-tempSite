@@ -1,0 +1,41 @@
+name: CI
+
+# Despliegue real: Docker en el VPS (ver Dockerfile / docker-compose.prod.yml /
+# deploy.sh / actualizar.sh) — ya no GitHub Pages. Este workflow solo valida
+# que el sitio compila, pasa sus pruebas unitarias y que la imagen Docker
+# construye limpio; no publica nada.
+
+on:
+  push:
+    branches: [main, sitioOficial]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build (Astro)
+        run: npm run build
+        env:
+          PUBLIC_SITE_URL: https://clarvo.mx
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+          PUBLIC_LEADS_ENDPOINT: ${{ vars.PUBLIC_LEADS_ENDPOINT }}
+
+      - name: Build Docker image (smoke test, sin publicar)
+        run: docker build -t clarvo-site:ci .

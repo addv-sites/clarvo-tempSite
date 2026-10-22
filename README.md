@@ -49,13 +49,42 @@ solo hay que llenarlas ahí y en el entorno de build.
 
 En GitHub Actions, `PUBLIC_LEADS_ENDPOINT` y `PUBLIC_GA_MEASUREMENT_ID` se
 inyectan desde **Settings → Secrets and variables → Actions → Variables**
-del repo (ver `.github/workflows/deploy.yml`).
+del repo (ver `.github/workflows/ci.yml` — solo CI, build+test+smoke test
+de la imagen Docker, ya no publica nada).
 
-## Despliegue
+## Despliegue (Docker, VPS — ya no GitHub Pages)
 
-GitHub Actions (`.github/workflows/deploy.yml`) construye y publica a
-GitHub Pages en cada push a `main`. El trabajo activo vive en la rama
-`sitioOficial` — no se despliega solo hasta fusionarse a `main`.
+El sitio corre en un contenedor propio (nginx + build estático de Astro),
+en el mismo VPS donde vive `control` de portalFac, sin compartir red ni
+volumen con ningún otro stack — solo publicado en loopback, con el nginx
+del host (fuera de Docker, certbot) haciendo el reverse proxy por dominio.
+
+Archivos relevantes: `Dockerfile` (build multi-stage), `nginx.conf`
+(estático + cabeceras de seguridad + CSP), `docker-compose.prod.yml`
+(servicio `web`, red/puerto propios), `.env.prod.example` (variables
+`PUBLIC_*` de build — ninguna secreta), `deploy.sh` (primer despliegue:
+build + up + nginx/certbot del host) y `actualizar.sh` (despliegues
+posteriores: rebuild + recreate, sin tocar nginx/certbot del host).
+
+```bash
+# En el VPS, primera vez:
+cp .env.prod.example .env   # llenar PUBLIC_* reales (GA4, Turnstile, leads)
+sudo ./deploy.sh            # build + up + nginx/certbot del host + TLS
+
+# Actualizaciones posteriores (tras git pull / rsync del código nuevo):
+./actualizar.sh
+```
+
+Local, para probar la imagen antes de subir al VPS:
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod.example build web
+docker compose -f docker-compose.prod.yml --env-file .env.prod.example up web
+# http://localhost:8090
+```
+
+`public/CNAME` se quitó (era específico de GitHub Pages) — el dominio
+`clarvo.mx` ahora lo resuelve el nginx del host hacia el contenedor.
 
 ## Estructura relevante
 
