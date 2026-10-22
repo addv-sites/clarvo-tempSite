@@ -460,7 +460,7 @@ function Scene({
       <directionalLight position={[4.5, 5, 6]} intensity={1.35} />
       <directionalLight position={[-5, 1.5, 2]} intensity={0.55} color="#8fb4ff" />
       <directionalLight position={[-2.5, 2.5, -5]} intensity={2.3} color="#2fd2ff" />
-      <Environment preset="city" environmentIntensity={0.3} background={false} />
+      <Environment files="/hdri/potsdamer_platz_1k.hdr" environmentIntensity={0.3} background={false} />
 
       <Rig
         hovering={hovering}
