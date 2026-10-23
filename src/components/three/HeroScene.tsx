@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, PerspectiveCamera } from "@react-three/drei";
-import { Matrix4, Vector3, type Group } from "three";
+import {
+  AdditiveBlending,
+  CanvasTexture,
+  Matrix4,
+  Vector3,
+  type DirectionalLight,
+  type Group,
+  type Sprite,
+} from "three";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import DeviceMesh, { SPECS, OPEN_ANGLE, type DeviceType } from "./DeviceMesh";
@@ -168,6 +176,13 @@ const INTRO_LAPTOP = {
   deck: { start: sp(0.3), dur: sp(0.75) },
 };
 
+/** Pulso de luz al cerrar el ensamblaje (propuesta "Ensamblaje" del pitch
+ *  de hero 3D): arranca justo cuando aterriza la última pieza (el
+ *  teléfono, sp(0.2)+sp(1.0)) para que la escena se sienta "revelada" en
+ *  vez de solo llegar — ver AssemblyFlash más abajo. */
+const FLASH_START = sp(1.2);
+const FLASH_DUR = sp(0.5);
+
 /** Encendido de pantalla (fase B) — delay en segundos desde el montaje,
  *  consumido por ScreenOverlay vía CSS `animation-delay`. */
 const SCREEN_POWER_START: Record<DeviceType, number> = {
@@ -195,6 +210,82 @@ function easeOutBack(x: number): number {
   const c1 = 1.70158;
   const c3 = c1 + 1;
   return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
+/** Ataque rápido, caída suave — la forma de un flash, no de un fundido
+ *  simétrico. 0 fuera de [start, start+dur]. */
+function flashEnvelope(lt: number, start: number, dur: number): number {
+  const p = (lt - start) / dur;
+  if (p < 0 || p > 1) return 0;
+  return p < 0.25 ? p / 0.25 : Math.pow(1 - (p - 0.25) / 0.75, 2);
+}
+
+/** Textura radial generada en canvas — sin asset: un PNG de brillo sería
+ *  overkill para un degradado tan simple, y así se queda en los colores
+ *  de marca sin depender de un archivo. */
+function makeGlowTexture(): CanvasTexture {
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, "rgba(255,255,255,1)");
+  g.addColorStop(0.25, "rgba(190,240,255,0.9)");
+  g.addColorStop(0.6, "rgba(47,210,255,0.35)");
+  g.addColorStop(1, "rgba(47,210,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  return new CanvasTexture(canvas);
+}
+
+/** Pulso de luz al cerrar el ensamblaje: un sprite con brillo aditivo más
+ *  un pico breve de intensidad en la luz de contorno cian, disparados
+ *  juntos cuando aterriza la última pieza — la escena se "revela" en vez
+ *  de solo llegar. Reutiliza el mismo introT0 que ya cronometra Rig. */
+function AssemblyFlash({
+  introT0,
+  rimLightRef,
+  rimBaseIntensity,
+  position,
+}: {
+  introT0: React.MutableRefObject<number | null>;
+  rimLightRef: React.MutableRefObject<DirectionalLight | null>;
+  rimBaseIntensity: number;
+  position: [number, number, number];
+}) {
+  const spriteRef = useRef<Sprite>(null);
+  const texture = useMemo(() => makeGlowTexture(), []);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (introT0.current === null) introT0.current = t;
+    const lt = t - introT0.current;
+    const flash = flashEnvelope(lt, FLASH_START, FLASH_DUR);
+
+    const sprite = spriteRef.current;
+    if (sprite) {
+      const mat = sprite.material as import("three").SpriteMaterial;
+      mat.opacity = flash * 0.85;
+      const scale = 2.1 + flash * 1.3;
+      sprite.scale.set(scale, scale, 1);
+    }
+
+    const rim = rimLightRef.current;
+    if (rim) rim.intensity = rimBaseIntensity + flash * 3.2;
+  });
+
+  return (
+    <sprite ref={spriteRef} position={position} scale={[2.1, 2.1, 1]}>
+      <spriteMaterial
+        map={texture}
+        transparent
+        opacity={0}
+        depthWrite={false}
+        blending={AdditiveBlending}
+      />
+    </sprite>
+  );
 }
 
 interface RigProps {
@@ -445,6 +536,9 @@ function Scene({
   laptopLidRef: React.MutableRefObject<Group | null>;
   laptopDeckRef: React.MutableRefObject<Group | null>;
 }) {
+  const rimLightRef = useRef<DirectionalLight | null>(null);
+  const RIM_BASE_INTENSITY = 2.3;
+
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0.22, 6.3]} fov={33} />
@@ -459,7 +553,7 @@ function Scene({
       <ambientLight intensity={0.3} />
       <directionalLight position={[4.5, 5, 6]} intensity={1.35} />
       <directionalLight position={[-5, 1.5, 2]} intensity={0.55} color="#8fb4ff" />
-      <directionalLight position={[-2.5, 2.5, -5]} intensity={2.3} color="#2fd2ff" />
+      <directionalLight ref={rimLightRef} position={[-2.5, 2.5, -5]} intensity={RIM_BASE_INTENSITY} color="#2fd2ff" />
       <Environment files="/hdri/potsdamer_platz_1k.hdr" environmentIntensity={0.3} background={false} />
 
       <Rig
@@ -471,6 +565,12 @@ function Scene({
         introT0={introT0}
         laptopLidRef={laptopLidRef}
         laptopDeckRef={laptopDeckRef}
+      />
+      <AssemblyFlash
+        introT0={introT0}
+        rimLightRef={rimLightRef}
+        rimBaseIntensity={RIM_BASE_INTENSITY}
+        position={[0.46, 0.78, 0.15]}
       />
       <ScreenSync anchorRefs={anchorRefs} overlayRefs={overlayRefs} layout={layout} />
     </>

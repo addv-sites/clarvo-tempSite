@@ -6,10 +6,12 @@
 // client:visible: la isla solo hidrata cuando el hero entra en viewport,
 // nunca bloquea el render inicial del resto de la página.
 import HeroScene from "../three/HeroScene";
+import HeroWaveBackground from "../three/HeroWaveBackground";
 ---
 
 <section id="inicio" class="relative overflow-hidden pt-16 pb-20 sm:pt-20 lg:pb-28">
-  <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:gap-8">
+  <HeroWaveBackground client:visible />
+  <div class="relative mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:gap-8">
     <div class="reveal">
       <p class="text-sm font-semibold tracking-wide text-accent-electric uppercase">
         Más tiempo para lo que importa
