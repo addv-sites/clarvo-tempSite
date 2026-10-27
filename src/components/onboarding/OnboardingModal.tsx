@@ -1,17 +1,37 @@
 import { useEffect, useRef, useState } from "react";
 import {
   actualizarBorrador,
-  convertirBorrador,
+  pagarBorrador,
+  estadoPago,
   crearBorrador,
   obtenerBorrador,
   slugDisponible,
   OnboardingApiError,
   type Ciclo,
-  type ResultadoConversion,
+  type EstadoPago,
 } from "../../lib/onboardingApi";
 import TurnstileWidget from "./TurnstileWidget";
 
-type Paso = "plan" | "pago" | "empresa" | "config" | "credenciales" | "completado";
+// Orden real del wizard (punto 429, corregido): el pago es el ÚLTIMO
+// paso antes de redirigir a Stripe, nunca el segundo. El webhook de
+// Stripe confirma el pago en 1-3 segundos — si "Pagar" viniera temprano
+// (como antes), casi siempre llegaría ANTES de que el visitante termine
+// de llenar empresa/config/credenciales, y como el aprovisionamiento
+// exige esos datos completos, el intento de activación fallaría y el
+// evento de Stripe quedaría marcado "ya procesado" para siempre (sin
+// reintento automático posible) — confirmado real probando en local.
+type Paso = "plan" | "empresa" | "config" | "credenciales" | "pago" | "completado";
+const PASOS_VALIDOS: Paso[] = ["plan", "empresa", "config", "credenciales", "pago", "completado"];
+
+// Resultado ya NO lo arma convertirBorrador() en el navegador (eso ahora
+// corre del lado del webhook de Stripe) — lo arma el polling de
+// estado-pago cuando activado=true, a partir de la misma información que
+// antes devolvía la conversión directa.
+interface ResultadoActivacion {
+  slug: string;
+  urlAdmin: string;
+  urlPortal: string | null;
+}
 
 const PLAN_NOMBRE: Record<string, string> = {
   solicita: "CLARVO Solicita",
@@ -76,7 +96,8 @@ export default function OnboardingModal() {
   const [estado, setEstado] = useState<EstadoBorrador>(ESTADO_INICIAL);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resultadoActivacion, setResultadoActivacion] = useState<ResultadoConversion | null>(null);
+  const [resultadoActivacion, setResultadoActivacion] = useState<ResultadoActivacion | null>(null);
+  const [pagoInfo, setPagoInfo] = useState<EstadoPago | null>(null);
   const [slugEstado, setSlugEstado] = useState<"idle" | "revisando" | "disponible" | "tomado">("idle");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -98,6 +119,76 @@ export default function OnboardingModal() {
     return () => window.removeEventListener("clarvo:abrir-onboarding", onAbrir);
   }, []);
 
+  // Reanuda el wizard al volver del redirect de Stripe (success_url /
+  // cancel_url de control/utils/stripePagos.js: "?onboarding=<token>&paso=<paso>").
+  // La página se recarga por completo al salir a checkout.stripe.com, así
+  // que todo el estado de React se perdió — esto lo reconstruye leyendo el
+  // borrador real desde el servidor, nunca de memoria local.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("onboarding");
+    if (!token) return;
+    // "completado" por default: con el pago como ÚLTIMO paso, volver de
+    // Stripe ya exitoso significa que no queda NADA por llenar — solo
+    // esperar el polling. success_url/cancel_url (stripePagos.js) siempre
+    // mandan su propio "paso" explícito; este fallback es solo defensivo.
+    const pasoResumen = (params.get("paso") as Paso) || "completado";
+
+    (async () => {
+      try {
+        if (pasoResumen === "completado") {
+          // Bug real encontrado al probar (punto 429): obtenerBorrador()
+          // exige estado='activo' en el servidor — en cuanto el webhook de
+          // Stripe convierte el borrador (1-3s, con frecuencia ANTES de
+          // que esta misma página termine de cargar), ese fetch da 404 y
+          // el catch de abajo se traga el error sin mostrar nada — el
+          // visitante que SÍ pagó ve el sitio normal, sin éxito ni error.
+          // estadoPago() es la única ruta que no exige ese estado
+          // (a propósito, ver control/utils/onboardingBorrador.js) — es
+          // la única fuente confiable para el caso "vengo de pagar".
+          const data = await estadoPago(token);
+          setPagoInfo(data);
+          if (data.activado && data.resultado) setResultadoActivacion(data.resultado);
+          const guardado = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          setEstado((prev) => ({
+            ...prev,
+            token,
+            planClave: guardado?.planClave || prev.planClave,
+          }));
+          setPaso("completado");
+          setAbierto(true);
+          return;
+        }
+
+        const { borrador } = await obtenerBorrador(token);
+        setEstado({
+          ...ESTADO_INICIAL,
+          token: borrador.token,
+          planClave: borrador.planClave,
+          ciclo: borrador.ciclo,
+          nombreEmpresa: borrador.nombreEmpresa || "",
+          slug: borrador.slug || "",
+          contactoEmail: borrador.contactoEmail || "",
+          nombreComercial: borrador.nombreComercial || "",
+          zonaHoraria: borrador.zonaHoraria || "America/Mexico_City",
+          adminEmail: borrador.adminEmail || "",
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: borrador.token, planClave: borrador.planClave }));
+        setPaso(PASOS_VALIDOS.includes(pasoResumen) ? pasoResumen : "completado");
+        setAbierto(true);
+      } catch {
+        // Token inválido/expirado — no hay nada que reanudar, el visitante
+        // simplemente ve el sitio normal y puede empezar de cero.
+      } finally {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("onboarding");
+        url.searchParams.delete("paso");
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.toString());
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     if (!abierto) return;
     function onKeyDown(e: KeyboardEvent) {
@@ -112,6 +203,41 @@ export default function OnboardingModal() {
       document.body.style.overflow = prevOverflow;
     };
   }, [abierto]);
+
+  // Mientras se espera confirmación de pago (sobre todo OXXO/SPEI, que
+  // tardan de minutos a días) — pregunta cada 5s si el webhook de Stripe
+  // ya activó la cuenta. Se detiene sola en cuanto activado=true o si el
+  // componente se desmonta/cambia de paso.
+  useEffect(() => {
+    if (paso !== "completado" || !estado.token) return;
+    let cancelado = false;
+    async function verificar() {
+      try {
+        const data = await estadoPago(estado.token as string);
+        if (cancelado) return;
+        setPagoInfo(data);
+        if (data.activado && data.resultado) {
+          setResultadoActivacion(data.resultado);
+        }
+      } catch {
+        // Red intermitente — el siguiente tick reintenta, no hace falta
+        // mostrar error por un fallo de polling aislado.
+      }
+    }
+    verificar();
+    const id = setInterval(() => {
+      if (pagoInfo?.activado) {
+        clearInterval(id);
+        return;
+      }
+      verificar();
+    }, 5000);
+    return () => {
+      cancelado = true;
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paso, estado.token]);
 
   if (!abierto) return null;
 
@@ -165,16 +291,12 @@ export default function OnboardingModal() {
     }
   }
 
-  // Último paso: guarda las credenciales Y activa la cuenta real de una
-  // vez (intake + aprovisionamiento físico + plan + usuario admin, todo
-  // del lado de /control) — self-service, sin operador de por medio.
-  // Idempotente del lado del servidor: si falla a medias, reintentar con
-  // el mismo botón es seguro.
-  async function finalizarYActivar() {
-    if (estado.adminPassword !== estado.adminPassword2) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
+  // Último paso del wizard: ya NO activa nada directo — crea el Checkout
+  // Session real y manda al visitante a pagar en Stripe. El Turnstile se
+  // exige AQUÍ: este es el único paso que de verdad mueve dinero/llama a
+  // la API de Stripe, así que es el que hay que proteger de bots — ver
+  // DOCS/confStripe.html.
+  async function irAPagar() {
     if (!turnstileToken) {
       setError("Completa la verificación de seguridad antes de continuar.");
       return;
@@ -183,23 +305,27 @@ export default function OnboardingModal() {
     setError(null);
     try {
       const token = await asegurarBorrador();
-      await actualizarBorrador(token, {
-        adminEmail: estado.adminEmail,
-        adminPassword: estado.adminPassword,
-        pasoActual: "completado",
-      });
-      const resultado = await convertirBorrador(token, turnstileToken);
-      setResultadoActivacion(resultado);
-      setPaso("completado");
+      await actualizarBorrador(token, { ciclo: estado.ciclo, pasoActual: "pago" });
+      const { checkoutUrl } = await pagarBorrador(token, turnstileToken);
+      window.location.href = checkoutUrl;
     } catch (err) {
       setError(err instanceof OnboardingApiError ? err.message : "Ocurrió un error. Intenta de nuevo.");
-      // Un token de Turnstile es de un solo uso — si la conversión falló
-      // (incluso por otro motivo), hay que pedir uno nuevo antes de
-      // reintentar.
       setTurnstileToken(null);
     } finally {
       setCargando(false);
     }
+  }
+
+  // Guarda las credenciales y avanza a Pago (ÚLTIMO paso, ver nota en
+  // el tipo Paso arriba) — para cuando el webhook de Stripe confirme el
+  // pago, el borrador ya tiene TODO (empresa + config + credenciales) y
+  // convertirBorrador() puede aprovisionar sin fallar.
+  async function guardarCredenciales() {
+    if (estado.adminPassword !== estado.adminPassword2) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+    await avanzar("pago", { adminEmail: estado.adminEmail, adminPassword: estado.adminPassword });
   }
 
   function revisarSlug(valor: string) {
@@ -264,17 +390,7 @@ export default function OnboardingModal() {
             precio={precio}
             cargando={cargando}
             onCambiarCiclo={(ciclo) => setEstado((prev) => ({ ...prev, ciclo }))}
-            onContinuar={() => avanzar("pago", { ciclo: estado.ciclo })}
-          />
-        )}
-
-        {paso === "pago" && (
-          <PasoPago
-            estado={estado}
-            precio={precio}
-            cargando={cargando}
-            onAtras={() => setPaso("plan")}
-            onContinuar={() => avanzar("empresa")}
+            onContinuar={() => avanzar("empresa", { ciclo: estado.ciclo })}
           />
         )}
 
@@ -298,7 +414,7 @@ export default function OnboardingModal() {
               revisarSlug(slug);
             }}
             onCambiarCorreo={(contactoEmail) => setEstado((prev) => ({ ...prev, contactoEmail }))}
-            onAtras={() => setPaso("pago")}
+            onAtras={() => setPaso("plan")}
             onContinuar={() =>
               avanzar("config", {
                 nombreEmpresa: estado.nombreEmpresa,
@@ -316,12 +432,20 @@ export default function OnboardingModal() {
             onCambiarNombreComercial={(nombreComercial) => setEstado((prev) => ({ ...prev, nombreComercial }))}
             onCambiarZona={(zonaHoraria) => setEstado((prev) => ({ ...prev, zonaHoraria }))}
             onAtras={() => setPaso("empresa")}
-            onContinuar={() =>
+            onContinuar={() => {
+              // El campo de correo del admin en el paso siguiente MUESTRA
+              // contactoEmail como relleno si adminEmail está vacío, pero
+              // eso es solo visual — sin esto, el estado real se queda
+              // vacío y el botón de ese paso nunca se habilita hasta que
+              // el usuario borre y vuelva a escribir el mismo correo.
+              const adminEmail = estado.adminEmail || estado.contactoEmail;
+              setEstado((prev) => ({ ...prev, adminEmail }));
               avanzar("credenciales", {
                 nombreComercial: estado.nombreComercial,
                 zonaHoraria: estado.zonaHoraria,
-              })
-            }
+                adminEmail,
+              });
+            }}
           />
         )}
 
@@ -329,19 +453,29 @@ export default function OnboardingModal() {
           <PasoCredenciales
             estado={estado}
             cargando={cargando}
-            turnstileToken={turnstileToken}
             onCambiarCorreoAdmin={(adminEmail) => setEstado((prev) => ({ ...prev, adminEmail }))}
             onCambiarPassword={(adminPassword) => setEstado((prev) => ({ ...prev, adminPassword }))}
             onCambiarPassword2={(adminPassword2) => setEstado((prev) => ({ ...prev, adminPassword2 }))}
+            onAtras={() => setPaso("config")}
+            onContinuar={guardarCredenciales}
+          />
+        )}
+
+        {paso === "pago" && (
+          <PasoPago
+            estado={estado}
+            precio={precio}
+            cargando={cargando}
+            turnstileToken={turnstileToken}
             onTurnstileToken={setTurnstileToken}
             onTurnstileExpire={() => setTurnstileToken(null)}
-            onAtras={() => setPaso("config")}
-            onContinuar={finalizarYActivar}
+            onAtras={() => setPaso("credenciales")}
+            onContinuar={irAPagar}
           />
         )}
 
         {paso === "completado" && (
-          <PasoCompletado estado={estado} resultado={resultadoActivacion} onCerrar={cerrar} />
+          <PasoCompletado estado={estado} resultado={resultadoActivacion} pagoInfo={pagoInfo} onCerrar={cerrar} />
         )}
       </div>
     </div>
@@ -357,12 +491,22 @@ function Titulo({ eyebrow, children }: { eyebrow: string; children: React.ReactN
   );
 }
 
-function BotonContinuar({ onClick, cargando, children }: { onClick: () => void; cargando: boolean; children: React.ReactNode }) {
+function BotonContinuar({
+  onClick,
+  cargando,
+  deshabilitado,
+  children,
+}: {
+  onClick: () => void;
+  cargando: boolean;
+  deshabilitado?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={cargando}
+      disabled={cargando || deshabilitado}
       className="mt-6 w-full rounded-full bg-accent-electric px-5 py-3 text-sm font-semibold text-surface-deep transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {cargando ? "Guardando..." : children}
@@ -449,31 +593,40 @@ function PasoPago({
   estado,
   precio,
   cargando,
+  turnstileToken,
+  onTurnstileToken,
+  onTurnstileExpire,
   onAtras,
   onContinuar,
 }: {
   estado: EstadoBorrador;
   precio: number;
   cargando: boolean;
+  turnstileToken: string | null;
+  onTurnstileToken: (token: string) => void;
+  onTurnstileExpire: () => void;
   onAtras: () => void;
   onContinuar: () => void;
 }) {
   return (
     <div>
-      <Titulo eyebrow="Paso 2 de 5">Método de pago</Titulo>
+      <Titulo eyebrow="Paso 5 de 5">Método de pago</Titulo>
       <p className="mt-2 text-sm text-text-secondary">
         {PLAN_NOMBRE[estado.planClave]} · ${dinero(precio)}
         {estado.ciclo === "mensual" ? "/mes" : "/año"}
       </p>
       <div className="mt-5 rounded-xl border border-accent-electric/30 bg-accent-electric/5 p-4 text-sm text-text-secondary">
-        Estamos terminando de conectar el cobro con Stripe. Continúa y guardamos tu progreso — te avisamos por
-        correo en cuanto puedas completar tu pago, sin perder nada de lo que ya llenaste.
+        Vas a pagar en una página segura de Stripe. Puedes pagar con tarjeta (se activa al instante) o con
+        OXXO/SPEI (tu cuenta se activa en cuanto se confirme el pago, normalmente de minutos a un par de días).
       </div>
+
+      <TurnstileWidget onToken={onTurnstileToken} onExpire={onTurnstileExpire} />
+
       <div className="mt-6 flex gap-3">
         <BotonAtras onClick={onAtras} />
         <div className="flex-1">
-          <BotonContinuar onClick={onContinuar} cargando={cargando}>
-            Continuar (pago pendiente)
+          <BotonContinuar onClick={onContinuar} cargando={cargando} deshabilitado={!turnstileToken}>
+            Pagar ${dinero(precio)} y continuar
           </BotonContinuar>
         </div>
       </div>
@@ -508,7 +661,7 @@ function PasoEmpresa({
 
   return (
     <div>
-      <Titulo eyebrow="Paso 3 de 5">Datos de tu empresa</Titulo>
+      <Titulo eyebrow="Paso 2 de 5">Datos de tu empresa</Titulo>
       <p className="mt-2 text-sm text-text-secondary">Con esto creamos tu espacio dedicado — tu propia base de datos y URL.</p>
 
       <div className="mt-5">
@@ -592,7 +745,7 @@ function PasoConfig({
 }) {
   return (
     <div>
-      <Titulo eyebrow="Paso 4 de 5">Configura tu panel admin</Titulo>
+      <Titulo eyebrow="Paso 3 de 5">Configura tu panel admin</Titulo>
       <p className="mt-2 text-sm text-text-secondary">
         Esto es lo primero que vas a ajustar dentro de tu propio /admin — lo puedes cambiar después.
       </p>
@@ -637,35 +790,26 @@ function PasoConfig({
 function PasoCredenciales({
   estado,
   cargando,
-  turnstileToken,
   onCambiarCorreoAdmin,
   onCambiarPassword,
   onCambiarPassword2,
-  onTurnstileToken,
-  onTurnstileExpire,
   onAtras,
   onContinuar,
 }: {
   estado: EstadoBorrador;
   cargando: boolean;
-  turnstileToken: string | null;
   onCambiarCorreoAdmin: (v: string) => void;
   onCambiarPassword: (v: string) => void;
   onCambiarPassword2: (v: string) => void;
-  onTurnstileToken: (token: string) => void;
-  onTurnstileExpire: () => void;
   onAtras: () => void;
   onContinuar: () => void;
 }) {
   const puedeContinuar =
-    estado.adminEmail.includes("@") &&
-    estado.adminPassword.length >= 8 &&
-    estado.adminPassword2.length >= 8 &&
-    !!turnstileToken;
+    estado.adminEmail.includes("@") && estado.adminPassword.length >= 8 && estado.adminPassword2.length >= 8;
 
   return (
     <div>
-      <Titulo eyebrow="Paso 5 de 5">Usuario y contraseña del admin</Titulo>
+      <Titulo eyebrow="Paso 4 de 5">Usuario y contraseña del admin</Titulo>
       <p className="mt-2 text-sm text-text-secondary">Con esto vas a entrar a tu /admin en cuanto esté listo.</p>
 
       <div className="mt-5">
@@ -698,8 +842,6 @@ function PasoCredenciales({
         </Campo>
       </div>
 
-      <TurnstileWidget onToken={onTurnstileToken} onExpire={onTurnstileExpire} />
-
       <div className="flex gap-3">
         <BotonAtras onClick={onAtras} />
         <div className="flex-1">
@@ -720,40 +862,148 @@ function PasoCredenciales({
 function PasoCompletado({
   estado,
   resultado,
+  pagoInfo,
   onCerrar,
 }: {
   estado: EstadoBorrador;
-  resultado: ResultadoConversion | null;
+  resultado: ResultadoActivacion | null;
+  pagoInfo: EstadoPago | null;
   onCerrar: () => void;
 }) {
-  return (
-    <div className="text-center">
-      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-accent-success/40 bg-accent-success/10">
-        <svg viewBox="0 0 24 24" className="h-6 w-6 text-accent-success" fill="none" stroke="currentColor" strokeWidth="2.6">
-          <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+  // Rechazado: el único caso que necesita que el visitante vuelva a
+  // intentar algo — no hay nada que esperar, el pago ya falló de verdad.
+  if (pagoInfo?.pagoEstado === "fallido" && !resultado) {
+    return (
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-red-400/40 bg-red-400/10">
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-red-300" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h2 className="font-display text-xl font-bold text-text-primary">Tu pago no se pudo procesar</h2>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+          No te cobramos nada. Verifica los datos de tu tarjeta o elige otro método e intenta de nuevo — todo lo
+          que ya llenaste sigue guardado.
+        </p>
+        <button
+          type="button"
+          onClick={onCerrar}
+          className="mt-6 w-full rounded-full bg-accent-electric px-5 py-3 text-sm font-semibold text-surface-deep transition hover:brightness-110"
+        >
+          Entendido
+        </button>
       </div>
-      <h2 className="font-display text-xl font-bold text-text-primary">Tu cuenta ya está activa</h2>
-      <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-        {PLAN_NOMBRE[estado.planClave]} para{" "}
-        <span className="text-text-primary">clarvo.mx/{resultado?.slug || estado.slug}</span>. Te enviamos tus
-        accesos a <span className="text-text-primary">{estado.adminEmail || estado.contactoEmail}</span>. El cobro
-        con Stripe lo conectamos pronto — mientras tanto tu negocio ya puede operar.
-      </p>
-      {resultado && (
+    );
+  }
+
+  // Activado (pago ya confirmado, por tarjeta al instante o por
+  // OXXO/SPEI ya liquidado): mismo diseño de siempre.
+  if (resultado) {
+    return (
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-accent-success/40 bg-accent-success/10">
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-accent-success" fill="none" stroke="currentColor" strokeWidth="2.6">
+            <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <h2 className="font-display text-xl font-bold text-text-primary">Tu cuenta ya está activa</h2>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+          {PLAN_NOMBRE[estado.planClave]} para <span className="text-text-primary">clarvo.mx/{resultado.slug}</span>.
+          {estado.adminEmail || estado.contactoEmail ? (
+            <>
+              {" "}Te enviamos tus accesos a{" "}
+              <span className="text-text-primary">{estado.adminEmail || estado.contactoEmail}</span>.
+            </>
+          ) : (
+            // Caso "vengo de pagar antes de que el borrador fuera accesible"
+            // (ver resume-effect arriba): no tenemos el correo en memoria
+            // aquí, pero sí es real que el correo se mandó — evita
+            // interpolar un campo vacío ("a .").
+            " Revisa tu correo para tus accesos."
+          )}
+        </p>
         <a
           href={resultado.urlAdmin}
           className="mt-6 block w-full rounded-full bg-accent-electric px-5 py-3 text-sm font-semibold text-surface-deep transition hover:brightness-110"
         >
           Entrar a mi panel
         </a>
-      )}
+        {resultado.urlPortal && (
+          <a
+            href={resultado.urlPortal}
+            className="mt-3 block w-full rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-text-primary transition hover:border-white/30"
+          >
+            Ver portal de clientes
+          </a>
+        )}
+        <button
+          type="button"
+          onClick={onCerrar}
+          className="mt-3 w-full text-xs font-semibold text-text-muted transition hover:text-text-secondary"
+        >
+          Cerrar
+        </button>
+      </div>
+    );
+  }
+
+  // Pendiente (OXXO/SPEI esperando confirmación, o tarjeta cuyo webhook
+  // todavía no llega) — ángulo de neuroventas "compromiso + anclaje":
+  // recalca lo que YA se hizo y traduce el precio a un número chico
+  // diario, en vez de solo pedir paciencia.
+  const metodo = pagoInfo?.metodoPago;
+  const precioDia = Math.round(
+    (estado.ciclo === "mensual" ? PLAN_PRECIO_MENSUAL[estado.planClave] : PLAN_PRECIO_ANUAL[estado.planClave]) /
+      (estado.ciclo === "mensual" ? 30 : 365)
+  );
+
+  return (
+    <div className="text-center">
+      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-amber-400/40 bg-amber-400/10">
+        <svg viewBox="0 0 24 24" className="h-6 w-6 text-amber-300" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <circle cx="12" cy="12" r="9" />
+          <polyline points="12 7 12 12 15 15" />
+        </svg>
+      </div>
+      <h2 className="font-display text-xl font-bold text-text-primary">Casi listo, falta confirmar tu pago</h2>
+
+      <ul className="mt-4 flex flex-col gap-1.5 text-left text-sm text-text-secondary">
+        <li className="flex items-center gap-2">
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 flex-none text-accent-success" fill="none" stroke="currentColor" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Empresa configurada
+        </li>
+        <li className="flex items-center gap-2">
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 flex-none text-accent-success" fill="none" stroke="currentColor" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Administrador listo
+        </li>
+      </ul>
+
+      <div className="mt-4 flex items-baseline justify-between rounded-xl bg-surface px-4 py-3">
+        <span className="text-xs text-text-muted">Equivale a</span>
+        <span className="text-lg font-bold text-accent-electric">${dinero(precioDia)} MXN / día</span>
+      </div>
+
+      <p className="mt-4 text-sm leading-relaxed text-text-secondary">
+        {metodo === "oxxo"
+          ? "Paga tu ficha OXXO antes de que venza — tu cuenta se activa sola en cuanto se confirme."
+          : metodo === "spei"
+            ? "En cuanto tu banco confirme la transferencia SPEI, tu cuenta se activa sola."
+            : "Estamos confirmando tu pago con Stripe — esto normalmente toma unos segundos."}{" "}
+        Te avisamos por correo a <span className="text-text-primary">{estado.adminEmail || estado.contactoEmail}</span>.
+      </p>
+
       <button
         type="button"
         onClick={onCerrar}
-        className="mt-3 w-full rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-text-primary transition hover:border-white/30"
+        className="mt-6 w-full rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-text-primary transition hover:border-white/30"
       >
-        Cerrar
+        Cerrar (puedes volver cuando quieras)
       </button>
     </div>
   );

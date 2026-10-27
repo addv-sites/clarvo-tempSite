@@ -24,6 +24,7 @@ services:
         PUBLIC_CLARVO_ONBOARDING_URL: ${PUBLIC_CLARVO_ONBOARDING_URL:-}
         PUBLIC_CLARVO_APP_URL: ${PUBLIC_CLARVO_APP_URL:-}
         PUBLIC_TURNSTILE_SITE_KEY: ${PUBLIC_TURNSTILE_SITE_KEY:-}
+        CSP_CONNECT_SRC_EXTRA: ${CSP_CONNECT_SRC_EXTRA:-}
     container_name: clarvo-site-web
     restart: unless-stopped
     mem_limit: 128m

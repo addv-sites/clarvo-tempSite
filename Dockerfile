@@ -31,8 +31,21 @@ RUN npm run build
 # ---------- Etapa final ----------
 FROM nginx:1.27-alpine AS final
 
+# CSP_CONNECT_SRC_EXTRA: SOLO para pruebas locales de onboarding, cuando
+# este contenedor (sitio estatico) y "control" corren en puertos/origenes
+# distintos del host (ej. 127.0.0.1:8090 vs 127.0.0.1:8088) -- la CSP real
+# de produccion usa "connect-src 'self'" a secas porque clarvo.mx y su API
+# publica viven detras del mismo dominio. Vacio por default (el build de
+# produccion real NUNCA pasa este ARG), así que esto no afloja nada en
+# produccion -- solo lo ensancha si alguien lo pide explicitamente al
+# construir localmente.
+ARG CSP_CONNECT_SRC_EXTRA=""
+
 RUN rm -rf /usr/share/nginx/html/* /etc/nginx/conf.d/default.conf
 COPY security-headers.conf /etc/nginx/security-headers.conf
+RUN if [ -n "$CSP_CONNECT_SRC_EXTRA" ]; then \
+      sed -i "s|connect-src 'self'|connect-src 'self' ${CSP_CONNECT_SRC_EXTRA}|" /etc/nginx/security-headers.conf; \
+    fi
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /usr/src/app/dist/ /usr/share/nginx/html/
 

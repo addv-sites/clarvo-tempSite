@@ -67,10 +67,23 @@ async function solicitar<T>(path: string, init?: RequestInit): Promise<T> {
   return cuerpo as T;
 }
 
+// Reporte de cupones (punto en curso): captura best-effort del
+// utm_source con el que llegó el visitante — lee el query param real de
+// la página actual, nunca inventa uno. Si no viene, se manda null y el
+// reporte simplemente no sabe de dónde vino ese prospecto (honesto, no
+// un dato fabricado).
+function utmSourceActual(): string | null {
+  try {
+    return new URLSearchParams(window.location.search).get("utm_source");
+  } catch {
+    return null;
+  }
+}
+
 export function crearBorrador(planClave: string, ciclo: Ciclo) {
   return solicitar<{ ok: true; borrador: { token: string; planClave: string; ciclo: Ciclo } }>(
     "/api/public/onboarding/borrador",
-    { method: "POST", body: JSON.stringify({ planClave, ciclo }) }
+    { method: "POST", body: JSON.stringify({ planClave, ciclo, utmSource: utmSourceActual() }) }
   );
 }
 
@@ -85,27 +98,41 @@ export function actualizarBorrador(token: string, cambios: Record<string, unknow
   );
 }
 
-export interface ResultadoConversion {
+// Punto Stripe ("cobrar primero, activar después" — confirmado por el
+// usuario): el borrador YA NO se convierte directo desde el navegador —
+// convertirBorrador() (control/utils/onboardingConversion.js) ahora solo
+// lo invoca el webhook de Stripe, una vez que el pago se confirma de
+// verdad. Lo que el frontend sí hace es (1) pedir un Checkout Session y
+// redirigir ahí, y (2) después del regreso, preguntar si ya se activó —
+// ver estadoPago() abajo.
+export interface ResultadoPago {
   ok: true;
-  slug: string;
-  urlAdmin: string;
-  urlPortal: string;
+  checkoutUrl: string;
 }
 
-// Segmento B: convierte un borrador completo en un tenant real — intake +
-// aprovisionamiento físico + plan + usuario admin, sin operador de por
-// medio. Idempotente del lado del servidor: reintentar tras un timeout
-// de red es seguro, nunca duplica nada.
-//
-// Hallazgo M-06 (sonar_1.1.html, Fase D): este es el único paso que de
-// verdad aprovisiona infraestructura real, así que es donde se exige el
-// token de Turnstile — /control lo verifica contra Cloudflare antes de
-// convertir nada (ver control/utils/turnstile.js).
-export function convertirBorrador(token: string, turnstileToken: string) {
-  return solicitar<ResultadoConversion>(`/api/public/onboarding/convertir/${encodeURIComponent(token)}`, {
+// Mismo criterio de Turnstile que antes (hallazgo M-06, sonar_1.1.html):
+// este sigue siendo el único paso público que de verdad mueve dinero, así
+// que sigue exigiendo el token de Cloudflare.
+export function pagarBorrador(token: string, turnstileToken: string) {
+  return solicitar<ResultadoPago>(`/api/public/onboarding/pagar/${encodeURIComponent(token)}`, {
     method: "POST",
     body: JSON.stringify({ turnstileToken }),
   });
+}
+
+export interface EstadoPago {
+  pagoEstado: "pendiente" | "confirmado" | "fallido" | null;
+  metodoPago: string | null;
+  estado: "activo" | "convertido" | "abandonado";
+  activado: boolean;
+  resultado: { slug: string; urlAdmin: string; urlPortal: string | null } | null;
+}
+
+// Polling de solo lectura — se usa (a) al volver del redirect de Stripe,
+// y (b) mientras se espera una ficha OXXO/SPEI pendiente. Nunca expone
+// nada de otro tenant: el token del borrador es la única llave.
+export function estadoPago(token: string) {
+  return solicitar<EstadoPago>(`/api/public/onboarding/estado-pago/${encodeURIComponent(token)}`);
 }
 
 export async function slugDisponible(slug: string): Promise<boolean> {
