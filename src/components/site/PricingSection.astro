@@ -144,6 +144,17 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     return Math.round(n).toLocaleString("es-MX");
   }
 
+  // Cuota de disco real por plan (ver control/scripts/ensureSchema.js,
+  // columna disco_cuota_mb) — se muestra en GB cuando alcanza 1024 MB,
+  // nunca "1024 MB" crudo.
+  function discoTexto(mb: number): string {
+    if (mb >= 1024) {
+      const gb = mb / 1024;
+      return `${Number.isInteger(gb) ? gb : gb.toFixed(1)} GB`;
+    }
+    return `${mb} MB`;
+  }
+
   function tarjetaHtml(plan: PlanApi, index: number): string {
     const clave = plan.nombre.replace(/^CLARVO\s+/i, "").toLowerCase();
     const destacado = clave === "controla";
@@ -180,6 +191,7 @@ import OnboardingModal from "../onboarding/OnboardingModal";
           }
         </p>
         <p class="mt-3 text-xs text-text-muted">${plan.max_usuarios ? `Hasta ${plan.max_usuarios} usuario${plan.max_usuarios === 1 ? "" : "s"}` : "Usuarios ilimitados"}</p>
+        ${plan.disco_cuota_mb ? `<p class="mt-1 text-xs text-text-muted">${discoTexto(plan.disco_cuota_mb)} para tus fotos de productos y tickets</p>` : ""}
         <div class="flex-1">${grupos}</div>
         <button type="button" data-open-onboarding="${clave}" class="mt-8 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition ${
           destacado
