@@ -163,6 +163,11 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     sucursales_habilitado: number;
     marca_lookfeel_habilitado: number;
     promociones_habilitado: number;
+    reportes_por_reporte_habilitado: number;
+    reportes_cortes_habilitado: number;
+    reportes_eliminados_habilitado: number;
+    reportes_estado_inventario_habilitado: number;
+    reportes_estado_tickets_habilitado: number;
   }
 
   function svg(inner: string) {
@@ -180,8 +185,12 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     marca: svg('<path d="M12 2l2.6 6.6L21 9l-5 4.4L17.4 21 12 17.3 6.6 21 8 13.4 3 9l6.4-.4z"/>'),
     promos: svg('<path d="M3 11l18-8-8 18-2-8-8-2z"/>'),
   };
+  const ICONO_REPORTES = svg('<path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 16v-4M12 16V8M17 16v-7" stroke-linecap="round"/>');
+  for (const c of ["reportes_por_reporte", "reportes_cortes", "reportes_eliminados", "reportes_estado_inventario", "reportes_estado_tickets"]) {
+    MOD_ICONS[c] = ICONO_REPORTES;
+  }
   const MOD_LABELS: Record<string, string> = {
-    facturacion: "Facturación electrónica (CFDI)",
+    facturacion: "Gestión de facturas",
     ventas: "Registro de ventas",
     gastos: "Registro de gastos",
     cxc: "Cuentas por cobrar",
@@ -191,10 +200,25 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     sucursales: "Sucursales (grupo)",
     marca: "Personalización de marca",
     promos: "Campañas de promociones",
+    reportes_por_reporte: "Reportes por periodo (automático/manual)",
+    reportes_cortes: "Cortes de ventas",
+    reportes_eliminados: "Reporte de eliminados",
+    reportes_estado_inventario: "Estado del inventario",
+    reportes_estado_tickets: "Estado de tickets",
   };
   const GRUPOS: Array<{ titulo: string; claves: string[] }> = [
     { titulo: "Operación", claves: ["ventas", "gastos", "inventarios", "cxc"] },
     { titulo: "Facturación y clientes", claves: ["facturacion", "portal"] },
+    {
+      titulo: "Reportes",
+      claves: [
+        "reportes_por_reporte",
+        "reportes_cortes",
+        "reportes_eliminados",
+        "reportes_estado_inventario",
+        "reportes_estado_tickets",
+      ],
+    },
     { titulo: "Organización", claves: ["sucursales", "auditoria"] },
     { titulo: "Personalización", claves: ["marca", "promos"] },
   ];
@@ -209,6 +233,11 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     sucursales: "sucursales_habilitado",
     marca: "marca_lookfeel_habilitado",
     promos: "promociones_habilitado",
+    reportes_por_reporte: "reportes_por_reporte_habilitado",
+    reportes_cortes: "reportes_cortes_habilitado",
+    reportes_eliminados: "reportes_eliminados_habilitado",
+    reportes_estado_inventario: "reportes_estado_inventario_habilitado",
+    reportes_estado_tickets: "reportes_estado_tickets_habilitado",
   };
 
   function moneyInt(n: number) {
