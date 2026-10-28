@@ -143,4 +143,54 @@
     display: inline-block;
     animation: clarvo-price-pulse 0.42s ease;
   }
+
+  /* Esqueleto de precios (PricingSection, combinación 3+5 del Artifact de
+     propuestas): el color base vive incondicional en PricingSection.astro
+     (visible aunque no haya animación); solo el pulso en sí se gatea aquí. */
+  @keyframes clarvo-price-skel-glow {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .price-skel-bar {
+    animation: clarvo-price-skel-glow 1.6s ease-in-out infinite;
+  }
+
+  @keyframes clarvo-price-card-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 1px rgba(0, 210, 255, 0.15);
+    }
+    50% {
+      box-shadow:
+        0 0 22px -4px rgba(0, 210, 255, 0.45),
+        0 0 0 1px rgba(0, 210, 255, 0.4);
+    }
+  }
+
+  .price-skel-card {
+    animation: clarvo-price-card-glow 1.6s ease-in-out infinite;
+  }
+
+  @keyframes clarvo-status-dot {
+    0%,
+    80%,
+    100% {
+      opacity: 0.25;
+      transform: translateY(0);
+    }
+    40% {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+  }
+
+  .price-status-dot {
+    animation: clarvo-status-dot 1s ease-in-out infinite;
+  }
 }

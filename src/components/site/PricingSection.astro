@@ -21,8 +21,42 @@ import OnboardingModal from "../onboarding/OnboardingModal";
       </div>
     </div>
 
-    <div class="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-4" data-pricing-grid>
-      <p class="col-span-full text-center text-sm text-text-muted" data-pricing-loading>Cargando planes…</p>
+    <div
+      class="mt-10 flex min-h-[1.5rem] items-center justify-center gap-2 text-sm font-semibold text-text-secondary"
+      data-pricing-status
+      aria-live="polite"
+    >
+      <span class="inline-flex items-center gap-2" data-pricing-status-loading>
+        Actualizando precios
+        <span class="inline-flex gap-1" aria-hidden="true">
+          <span class="price-status-dot h-1 w-1 rounded-full bg-accent-electric"></span>
+          <span class="price-status-dot h-1 w-1 rounded-full bg-accent-electric" style="animation-delay:0.15s"></span>
+          <span class="price-status-dot h-1 w-1 rounded-full bg-accent-electric" style="animation-delay:0.3s"></span>
+        </span>
+      </span>
+      <span class="hidden items-center gap-2 text-accent-electric" data-pricing-status-done>
+        <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        Precios actualizados
+      </span>
+    </div>
+
+    <div class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-4" data-pricing-grid aria-busy="true">
+      {
+        Array.from({ length: 4 }).map(() => (
+          <div class="price-skel-card flex flex-col rounded-3xl border border-border-translucent bg-surface-card p-7" data-pricing-skeleton>
+            <div class="price-skel-bar h-3 w-2/3 rounded" />
+            <div class="price-skel-bar mt-6 h-8 w-1/2 rounded" />
+            <div class="price-skel-bar mt-3 h-2.5 w-2/5 rounded" />
+            <div class="mt-6 space-y-2.5">
+              <div class="price-skel-bar h-2 w-full rounded" />
+              <div class="price-skel-bar h-2 w-5/6 rounded" />
+              <div class="price-skel-bar h-2 w-4/6 rounded" />
+            </div>
+          </div>
+        ))
+      }
     </div>
 
     {/*
@@ -63,6 +97,43 @@ import OnboardingModal from "../onboarding/OnboardingModal";
   }
   [data-period-btn][aria-pressed="false"] {
     color: var(--color-text-secondary);
+  }
+
+  /* Esqueleto de precios + franja de estado (combinación 3+5 del Artifact
+     de propuestas, confirmada por el usuario): el esqueleto respira en el
+     cian de marca en vez de gris genérico, y la franja de texto de arriba
+     anuncia en palabras lo mismo que el halo anuncia visualmente — las dos
+     señales se apagan juntas al llegar los datos reales. El color base (sin
+     animar) es incondicional para que quede visible incluso con
+     prefers-reduced-motion; solo el pulso en sí vive en global.css, gateado
+     por ese media query (mismo criterio que .price-pulse). */
+  .price-skel-card {
+    box-shadow: 0 0 0 1px rgba(0, 210, 255, 0.35);
+  }
+  .price-skel-bar {
+    background: rgba(0, 210, 255, 0.16);
+  }
+
+  [data-pricing-status] {
+    transition:
+      opacity 0.4s ease,
+      max-height 0.4s ease,
+      margin 0.4s ease;
+    overflow: hidden;
+  }
+  [data-pricing-status-done] {
+    display: none;
+  }
+  [data-pricing-status].is-done [data-pricing-status-loading] {
+    display: none;
+  }
+  [data-pricing-status].is-done [data-pricing-status-done] {
+    display: inline-flex;
+  }
+  [data-pricing-status].is-gone {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
   }
 </style>
 
@@ -201,11 +272,28 @@ import OnboardingModal from "../onboarding/OnboardingModal";
       </div>`;
   }
 
+  // Franja de estado sobre la rejilla (combinación 3+5 del Artifact de
+  // propuestas, punto en curso): confirma en palabras lo que el halo cian
+  // del esqueleto ya anuncia visualmente. `statusDone()` muestra el check
+  // y colapsa la franja sola tras un momento; `statusGone()` la oculta de
+  // inmediato sin pasar por "actualizado" (caso: catálogo vacío, API no
+  // configurada, o fetch fallido — no hay nada que confirmar).
+  function statusDone(statusEl: Element | null) {
+    statusEl?.classList.add("is-done");
+    setTimeout(() => statusEl?.classList.add("is-gone"), 1300);
+  }
+  function statusGone(statusEl: Element | null) {
+    statusEl?.classList.add("is-gone");
+  }
+
   async function cargarPlanes() {
     const gridEl = document.querySelector("[data-pricing-grid]");
+    const statusEl = document.querySelector("[data-pricing-status]");
     if (!gridEl) return;
     if (!publicEnv.apiBaseUrl) {
       gridEl.innerHTML = '<p class="col-span-full text-center text-sm text-text-muted">Los planes se muestran en cuanto esté conectado el catálogo en este entorno.</p>';
+      gridEl.setAttribute("aria-busy", "false");
+      statusGone(statusEl);
       return;
     }
     try {
@@ -214,9 +302,12 @@ import OnboardingModal from "../onboarding/OnboardingModal";
       const data = (await res.json()) as { planes: PlanApi[] };
       if (!data.planes || data.planes.length === 0) {
         gridEl.innerHTML = '<p class="col-span-full text-center text-sm text-text-muted">No hay planes publicados por ahora.</p>';
+        gridEl.setAttribute("aria-busy", "false");
+        statusGone(statusEl);
         return;
       }
       gridEl.innerHTML = data.planes.map((p, i) => tarjetaHtml(p, i)).join("");
+      gridEl.setAttribute("aria-busy", "false");
       // Las tarjetas se inyectan DESPUÉS del fetch async — el
       // IntersectionObserver de index.astro ya corrió una sola vez al
       // cargar la página y nunca las observa, así que .reveal (opacity:0
@@ -225,8 +316,11 @@ import OnboardingModal from "../onboarding/OnboardingModal";
       // criterio que prefers-reduced-motion en global.css.
       gridEl.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-visible"));
       wireGrid();
+      statusDone(statusEl);
     } catch {
       gridEl.innerHTML = '<p class="col-span-full text-center text-sm text-text-muted">No pudimos cargar los planes. Intenta recargar la página.</p>';
+      gridEl.setAttribute("aria-busy", "false");
+      statusGone(statusEl);
     }
   }
 
