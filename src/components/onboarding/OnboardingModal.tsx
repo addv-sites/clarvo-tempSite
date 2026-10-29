@@ -804,8 +804,21 @@ function PasoCredenciales({
   onAtras: () => void;
   onContinuar: () => void;
 }) {
-  const puedeContinuar =
-    estado.adminEmail.includes("@") && estado.adminPassword.length >= 8 && estado.adminPassword2.length >= 8;
+  // Mismas 4 reglas que control/utils/credencialesAdmin.js:validarPasswordAdmin()
+  // — antes el frontend solo pedía 8 caracteres (el resto lo descubría el
+  // usuario hasta que el backend lo rechazaba). Propuesta 3 del Artifact de
+  // validación en vivo (confirmada por el usuario): barra de 4 segmentos +
+  // checklist compacta con palomita cian, en vez del placeholder estático.
+  const REGLAS_PASSWORD = [
+    { clave: "len", etiqueta: "8+ caracteres", cumple: (p: string) => p.length >= 8 },
+    { clave: "num", etiqueta: "Un número", cumple: (p: string) => /[0-9]/.test(p) },
+    { clave: "low", etiqueta: "Minúscula", cumple: (p: string) => /[a-z]/.test(p) },
+    { clave: "up", etiqueta: "Mayúscula", cumple: (p: string) => /[A-Z]/.test(p) },
+  ];
+  const reglasPassword = REGLAS_PASSWORD.map((r) => ({ ...r, ok: r.cumple(estado.adminPassword) }));
+  const passwordValida = reglasPassword.every((r) => r.ok);
+
+  const puedeContinuar = estado.adminEmail.includes("@") && passwordValida && estado.adminPassword2.length >= 8;
 
   return (
     <div>
@@ -831,6 +844,46 @@ function PasoCredenciales({
             placeholder="Mínimo 8 caracteres, con número, minúscula y mayúscula"
           />
         </Campo>
+        {estado.adminPassword && (
+          <div className="-mt-2.5 mb-4">
+            <div className="flex gap-1">
+              {reglasPassword.map((r) => (
+                <span
+                  key={r.clave}
+                  className={`h-1 flex-1 rounded-full transition-colors ${r.ok ? "bg-accent-electric" : "bg-border-translucent"}`}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1.5">
+              {reglasPassword.map((r) => (
+                <span
+                  key={r.clave}
+                  className={`flex items-center gap-1.5 text-xs transition-colors ${r.ok ? "text-text-primary" : "text-text-muted"}`}
+                >
+                  <span
+                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                      r.ok ? "border-accent-electric bg-accent-electric" : "border-border-translucent"
+                    }`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className={`h-2 w-2 text-surface-deep transition-transform ${r.ok ? "scale-100 opacity-100" : "scale-50 opacity-0"}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </span>
+                  {r.etiqueta}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <Campo label="Confirmar contraseña">
           <input
             type="password"
