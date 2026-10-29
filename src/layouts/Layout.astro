@@ -5,9 +5,10 @@ import Analytics from "../components/Analytics.astro";
 interface Props {
   title: string;
   description: string;
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
 
 const organizationJsonLd = {
@@ -28,6 +29,7 @@ const organizationJsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#050b1c" />
+    {noindex && <meta name="robots" content="noindex" />}
 
     <title>{title}</title>
     <meta name="description" content={description} />
