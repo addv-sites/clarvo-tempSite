@@ -1,5 +1,6 @@
 ---
 import { ArrowRight } from "@lucide/astro";
+import Logo from "../Logo.astro";
 
 const NAV_LINKS = [
   { href: "#programa", label: "¿Qué aprenderás?" },
@@ -12,16 +13,7 @@ const NAV_LINKS = [
 <header class="sticky top-0 z-40 border-b border-brand-border bg-[#050b1c]/85 backdrop-blur-md">
   <div class="mx-auto flex h-[72px] max-w-6xl items-center justify-between gap-4 px-6">
     <a href="/" class="shrink-0" aria-label="Ir al inicio de CLARVO">
-      <picture>
-        <source srcset="/images/logo/logo-on-dark.webp" type="image/webp" />
-        <img
-          src="/images/logo/logo-on-dark.png"
-          alt="CLARVO"
-          class="h-8 w-auto"
-          width="900"
-          height="338"
-        />
-      </picture>
+      <Logo size="footer" />
     </a>
 
     <nav class="hidden items-center gap-6 text-sm text-slate-300 lg:flex">
