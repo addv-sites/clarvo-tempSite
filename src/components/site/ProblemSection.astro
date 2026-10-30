@@ -4,13 +4,16 @@
 // en su propio ciclo — se desvanece y reaparece desfasada de las demás —
 // para que parezca un flujo constante de pensamientos llegando, no una
 // entrada puntual. dur/delay copiados tal cual del artifact verificado.
+// `mobile: true` en las 3 esquinas (evitan la cara/laptop al centro de la
+// foto); las otras 3 quedan `hidden sm:block` como antes. Pedido del
+// usuario 2026-10-30: el efecto no se veía en mobile por ese `hidden`.
 const thoughts = [
-  { text: "¿Cuánto debo cobrar?", pos: "left-[4%] top-[6%]", dur: "3.6s", delay: "0s" },
-  { text: "Facturas a la carrera", pos: "right-[2%] top-[2%]", dur: "4.4s", delay: ".6s" },
-  { text: "Tickets por WhatsApp", pos: "left-[0%] top-[38%]", dur: "3.9s", delay: "1.1s" },
-  { text: "¿Tengo ganancias?", pos: "right-[0%] top-[36%]", dur: "5.2s", delay: "1.7s" },
-  { text: "Gastos sin control", pos: "left-[6%] bottom-[4%]", dur: "4.0s", delay: ".3s" },
-  { text: "Excel por todos lados", pos: "right-[4%] bottom-[2%]", dur: "4.8s", delay: "1.4s" },
+  { text: "¿Cuánto debo cobrar?", pos: "left-[4%] top-[6%]", dur: "3.6s", delay: "0s", mobile: true },
+  { text: "Facturas a la carrera", pos: "right-[2%] top-[2%]", dur: "4.4s", delay: ".6s", mobile: true },
+  { text: "Tickets por WhatsApp", pos: "left-[0%] top-[38%]", dur: "3.9s", delay: "1.1s", mobile: false },
+  { text: "¿Tengo ganancias?", pos: "right-[0%] top-[36%]", dur: "5.2s", delay: "1.7s", mobile: false },
+  { text: "Gastos sin control", pos: "left-[6%] bottom-[4%]", dur: "4.0s", delay: ".3s", mobile: true },
+  { text: "Excel por todos lados", pos: "right-[4%] bottom-[2%]", dur: "4.8s", delay: "1.4s", mobile: false },
 ];
 ---
 
@@ -50,7 +53,7 @@ const thoughts = [
       </div>
       {thoughts.map((t) => (
         <span
-          class={`thought absolute ${t.pos} hidden max-w-[9rem] rounded-xl bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-lg sm:block`}
+          class={`thought absolute ${t.pos} ${t.mobile ? "block" : "hidden sm:block"} max-w-[7rem] rounded-xl bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-lg sm:max-w-[9rem] sm:px-3 sm:py-2 sm:text-xs`}
           style={`animation-duration: ${t.dur}; animation-delay: ${t.delay};`}
         >
           {t.text}
