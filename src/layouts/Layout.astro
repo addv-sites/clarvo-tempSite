@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Analytics from "../components/Analytics.astro";
+import CookieConsent from "../components/site/CookieConsent.astro";
 
 interface Props {
   title: string;
@@ -55,5 +56,6 @@ const organizationJsonLd = {
   </head>
   <body class="overflow-x-hidden bg-gradient-to-br from-[#050b1c] to-[#0f1f4a] text-white antialiased">
     <slot />
+    <CookieConsent />
   </body>
 </html>

@@ -1,22 +1,49 @@
 ---
+// GA4 solo se carga con consentimiento analítico (ver CookieConsent.astro).
+// define:vars inlinea el script (sin bundler) — por eso STORAGE_KEY y
+// CONSENT_EVENT están repetidos aquí en vez de importados de
+// src/lib/cookieConsent.ts; deben mantenerse idénticos a ese archivo.
 const measurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 ---
 
 {
   measurementId && (
-    <>
-      <script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-      />
-      <script define:vars={{ measurementId }}>
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', measurementId);
-        `}
-      </script>
-    </>
+    <script define:vars={{ measurementId }}>
+      {`
+        (function () {
+          var STORAGE_KEY = "clarvo-cookie-consent";
+          var CONSENT_EVENT = "clarvo:cookie-consent-changed";
+
+          function hasAnalyticsConsent() {
+            try {
+              var raw = localStorage.getItem(STORAGE_KEY);
+              if (!raw) return false;
+              return JSON.parse(raw).analytics === true;
+            } catch (e) {
+              return false;
+            }
+          }
+
+          function loadGA() {
+            if (window.__clarvoGaLoaded) return;
+            window.__clarvoGaLoaded = true;
+            var s = document.createElement("script");
+            s.async = true;
+            s.src = "https://www.googletagmanager.com/gtag/js?id=" + measurementId;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { window.dataLayer.push(arguments); }
+            window.gtag = gtag;
+            gtag("js", new Date());
+            gtag("config", measurementId);
+          }
+
+          if (hasAnalyticsConsent()) loadGA();
+          window.addEventListener(CONSENT_EVENT, function (e) {
+            if (e.detail && e.detail.analytics) loadGA();
+          });
+        })();
+      `}
+    </script>
   )
 }

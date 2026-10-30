@@ -12,6 +12,7 @@ const navLinks = [
   { href: "#testimonios", label: "Testimonios" },
   { href: "#faq", label: "FAQ" },
   { href: "#cotizador-a-medida", label: "Contacto" },
+  { href: "/privacidad", label: "Aviso de privacidad" },
 ];
 ---
 
@@ -53,6 +54,13 @@ const navLinks = [
     <div class="mt-10 flex flex-col gap-3 border-t border-white/5 pt-6 text-sm text-text-muted sm:flex-row sm:items-center sm:justify-between">
       <p>© 2026 CLARVO by ADDV. Todos los derechos reservados.</p>
       <div class="flex items-center gap-4">
+        <button
+          type="button"
+          data-reopen-cookie-banner
+          class="cursor-pointer border-none bg-transparent p-0 font-sans text-sm text-text-muted underline transition hover:text-white"
+        >
+          Preferencias de cookies
+        </button>
         <span>Transformamos negocios. Agregamos valor que trasciende.</span>
         <span class="flex items-center gap-2">
           <svg viewBox="0 0 3 2" class="h-3.5 w-5 shrink-0 rounded-sm" aria-hidden="true">

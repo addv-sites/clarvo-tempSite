@@ -1,0 +1,294 @@
+---
+// Aviso de privacidad — propuesta 8 confirmada por el usuario (hero
+// degradado de marca + documento). Identidad del responsable y domicilio
+// tomados de https://www.addv.mx/ (confirmado con el usuario 2026-10-30).
+import Layout from "../layouts/Layout.astro";
+import SiteHeader from "../components/site/SiteHeader.astro";
+import SiteFooter from "../components/site/SiteFooter.astro";
+
+const ultimaActualizacion = "30 de octubre de 2026";
+---
+
+<Layout
+  title="Aviso de privacidad | CLARVO"
+  description="Cómo CLARVO (operado por ADDV) recaba, usa y protege tus datos personales, conforme a la LFPDPPP."
+>
+  <SiteHeader />
+
+  <main class="bg-surface-deep">
+    <section class="priv-hero">
+      <div class="priv-hero-inner reveal">
+        <p class="priv-mark">CLARVO · LEGAL</p>
+        <h1>Aviso de privacidad</h1>
+        <p class="priv-hero-lede">
+          Cómo recabamos, usamos y protegemos tus datos personales, conforme a la Ley Federal de Protección de Datos
+          Personales en Posesión de los Particulares (LFPDPPP).
+        </p>
+        <p class="priv-hero-meta">Última actualización: {ultimaActualizacion}</p>
+      </div>
+    </section>
+
+    <div class="priv-doc">
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">1 · Identidad y domicilio del responsable</p>
+        <h2>Quién trata tus datos</h2>
+        <p>
+          <strong>Agile Development and Design + Value, S.A. de C.V.</strong> ("ADDV", "CLARVO" o "nosotros"), con
+          domicilio en Homero 229, Master Suite 3, Privado 5, Polanco, Ciudad de México, C.P. 11560, es responsable
+          del tratamiento de tus datos personales conforme a la LFPDPPP y su Reglamento.
+        </p>
+      </section>
+
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">2 · Datos personales que recabamos</p>
+        <h2>Según cómo interactúes con clarvo.mx</h2>
+        <ul>
+          <li><strong>Masterclass:</strong> nombre, correo electrónico, tipo de negocio, teléfono.</li>
+          <li><strong>Cotizador a la medida:</strong> empresa, nombre de contacto, correo, teléfono, módulos de interés, notas.</li>
+          <li><strong>Registro / onboarding de cuenta:</strong> empresa, nombre comercial, subdominio, correo del administrador, zona horaria y contraseña (siempre almacenada cifrada).</li>
+          <li><strong>Pagos:</strong> procesados directamente por Stripe — CLARVO no almacena el número completo de tu tarjeta.</li>
+          <li><strong>Navegación:</strong> IP, dispositivo/navegador y páginas visitadas, vía cookies (ver sección 6).</li>
+        </ul>
+        <p>No recabamos datos personales sensibles (salud, creencias religiosas, biométricos, etc.).</p>
+      </section>
+
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">3 · Finalidades del tratamiento</p>
+        <h2>Para qué los usamos</h2>
+        <p>
+          <strong>Primarias:</strong> dar seguimiento a tu masterclass o cotización, crear y administrar tu cuenta,
+          procesar tu pago, brindarte soporte técnico y cumplir obligaciones legales y fiscales.
+        </p>
+        <p>
+          <strong>Secundarias:</strong> enviarte contenido educativo, novedades del producto o encuestas de
+          satisfacción. Puedes negarlas sin que afecte el servicio escribiendo a
+          <a href="mailto:contacto@addv.mx">contacto@addv.mx</a> con el asunto "No deseo que mis datos se usen para
+          fines secundarios".
+        </p>
+      </section>
+
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">4 · Transferencia de tus datos</p>
+        <h2>Con quién los compartimos</h2>
+        <p>
+          Compartimos tus datos únicamente con terceros que nos ayudan a operar el servicio, bajo contrato y solo
+          para esos fines — nunca se venden ni se rentan:
+        </p>
+        <div class="priv-table" role="table">
+          <div class="priv-row priv-row-head" role="row">
+            <span role="columnheader">Tercero</span><span role="columnheader">Para qué</span><span role="columnheader">Dónde procesa</span>
+          </div>
+          <div class="priv-row" role="row">
+            <span role="cell">Google (Sheets / Analytics)</span><span role="cell">Recepción de leads y medición de tráfico</span><span role="cell">Estados Unidos</span>
+          </div>
+          <div class="priv-row" role="row">
+            <span role="cell">Stripe, Inc.</span><span role="cell">Procesamiento de pagos</span><span role="cell">Estados Unidos</span>
+          </div>
+          <div class="priv-row" role="row">
+            <span role="cell">Cloudflare, Inc. (Turnstile)</span><span role="cell">Verificación anti-bot en formularios de pago</span><span role="cell">Red global (EUA/UE)</span>
+          </div>
+        </div>
+        <p>
+          Estas transferencias internacionales se realizan bajo los supuestos de encargo de tratamiento previstos en
+          el artículo 36 de la LFPDPPP; estos proveedores están obligados contractualmente a proteger tus datos con
+          el mismo nivel que exige esta ley.
+        </p>
+      </section>
+
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">5 · Cookies y tecnologías de rastreo</p>
+        <h2>Lo esencial y lo opcional</h2>
+        <p>
+          <strong>Esenciales:</strong> necesarias para que el sitio y los formularios funcionen (seguridad anti-bot
+          de Cloudflare Turnstile, prevención de spam). Siempre activas.
+        </p>
+        <p>
+          <strong>Analíticas (Google Analytics):</strong> solo si las aceptas, nos ayudan a entender cómo se usa el
+          sitio para mejorarlo.
+        </p>
+        <p>
+          Puedes aceptar, rechazar o cambiar tu elección en cualquier momento desde "Preferencias de cookies" en el
+          pie de página.
+        </p>
+      </section>
+
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">6 · Derechos ARCO</p>
+        <h2>Tu control sobre tus datos</h2>
+        <p>
+          Tienes derecho a <strong>Acceder, Rectificar, Cancelar u Oponerte</strong> (ARCO) al uso de tus datos
+          personales, así como a revocar tu consentimiento en cualquier momento. Para ejercerlos, escribe a
+          <a href="mailto:contacto@addv.mx">contacto@addv.mx</a> incluyendo:
+        </p>
+        <ol>
+          <li>Tu nombre completo y el correo con el que te registraste.</li>
+          <li>Una descripción clara de los datos sobre los que ejerces tu derecho.</li>
+          <li>Cualquier documento que facilite localizar tus datos.</li>
+        </ol>
+        <p>
+          Te responderemos en un plazo máximo de <strong>20 días hábiles</strong>, y si procede, haremos efectiva la
+          solicitud dentro de los <strong>15 días hábiles</strong> siguientes.
+        </p>
+      </section>
+
+      <section class="priv-block reveal">
+        <p class="priv-eyebrow">7 · Cambios a este aviso</p>
+        <h2>Cómo te enteras</h2>
+        <p>
+          Podemos actualizar este aviso ante cambios en nuestros servicios o por requerimientos legales.
+          Publicaremos la versión vigente en esta misma página con su fecha de actualización. Si el cambio es
+          sustancial, te lo notificaremos por correo o mediante un aviso visible en el sitio.
+        </p>
+      </section>
+
+      <section class="priv-block priv-contact reveal">
+        <p class="priv-eyebrow">Contacto</p>
+        <p>
+          <strong>Agile Development and Design + Value, S.A. de C.V.</strong><br />
+          Homero 229, Master Suite 3, Privado 5, Polanco, Ciudad de México, C.P. 11560<br />
+          <a href="mailto:contacto@addv.mx">contacto@addv.mx</a> · +52 (55) 5254 2235
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <SiteFooter />
+</Layout>
+
+<style>
+  .priv-hero {
+    background: linear-gradient(120deg, #031022, #07304a 55%, #00d2ff);
+    padding: 72px 24px 64px;
+  }
+  .priv-hero-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .priv-mark {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: #bdf4ff;
+    margin: 0 0 14px;
+  }
+  .priv-hero-inner h1 {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.5vw, 46px);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .priv-hero-lede {
+    color: #d6f2ff;
+    font-size: 15.5px;
+    max-width: 560px;
+    line-height: 1.65;
+    margin: 0 0 14px;
+  }
+  .priv-hero-meta {
+    color: #8fd8ee;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .priv-doc {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 100px;
+  }
+  .priv-block {
+    padding: 36px 0;
+    border-bottom: 1px solid var(--color-border-translucent, rgba(255, 255, 255, 0.08));
+    color: var(--color-text-secondary, #94a3b8);
+  }
+  .priv-block:last-child {
+    border-bottom: none;
+  }
+  .priv-eyebrow {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent-electric, #00d2ff);
+    margin: 0 0 8px;
+  }
+  .priv-block h2 {
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--color-text-primary, #fff);
+    margin: 0 0 14px;
+  }
+  .priv-block p,
+  .priv-block li {
+    font-size: 15px;
+    line-height: 1.7;
+    margin: 0 0 12px;
+  }
+  .priv-block strong {
+    color: #cbd5e1;
+  }
+  .priv-block a {
+    color: var(--color-accent-electric, #00d2ff);
+  }
+  .priv-block ul,
+  .priv-block ol {
+    padding-left: 22px;
+    margin: 0 0 14px;
+  }
+
+  .priv-table {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .priv-row {
+    display: grid;
+    grid-template-columns: 1.1fr 1.6fr 1fr;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .priv-row:last-child {
+    border-bottom: none;
+  }
+  .priv-row-head {
+    background: rgba(255, 255, 255, 0.03);
+    font-weight: 700;
+    color: #e7ecf5;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: 11.5px;
+  }
+  @media (max-width: 640px) {
+    .priv-row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+
+  .priv-contact p {
+    margin: 0;
+  }
+</style>
+
+<script>
+  // Reveal-on-scroll: mismo patrón que index.astro / masterclass.
+  const revealTargets = document.querySelectorAll(".reveal");
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 },
+  );
+  revealTargets.forEach((el) => revealObserver.observe(el));
+</script>
