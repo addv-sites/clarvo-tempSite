@@ -35,9 +35,40 @@ export default function MetricCard({ label, value, delta, deltaTone }: MetricCar
         <p style={{ margin: 0, fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {label}
         </p>
-        <p style={{ margin: "4px 0 0", fontSize: 18, fontWeight: 800, color: "#fff" }}>{value}</p>
+        <p
+          style={{
+            margin: "4px 0 0",
+            // clamp en vez de un tamaño fijo: a 390px con 4 tarjetas en
+            // grid-cols-2 cada celda mide ~165px — "$98,776.78" a 18px no
+            // cabía y se encimaba con la tarjeta de al lado (reportado por
+            // el usuario). El valor se angosta solo en pantallas chicas,
+            // nunca en desktop (clamp topa en 18px desde ~420px de ancho
+            // de viewport).
+            fontSize: "clamp(13px, 4.2vw, 18px)",
+            fontWeight: 800,
+            color: "#fff",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {value}
+        </p>
       </div>
-      {delta && <p style={{ margin: 0, fontSize: 10.5, color: TONE_COLOR[deltaTone] }}>{delta}</p>}
+      {delta && (
+        <p
+          style={{
+            margin: 0,
+            fontSize: 10.5,
+            color: TONE_COLOR[deltaTone],
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {delta}
+        </p>
+      )}
     </div>
   );
 }

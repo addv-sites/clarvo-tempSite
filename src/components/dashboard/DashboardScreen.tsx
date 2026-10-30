@@ -66,6 +66,14 @@ export default function DashboardScreen({ variant = "full", revealAt = 0 }: Prop
       </div>
 
       <div
+        // `full`: sin gridTemplateColumns inline — lo decide el className
+        // de Tailwind (grid-cols-2 en móvil, sm:grid-cols-4 desde 640px),
+        // para que SÍ pueda responder al ancho real de pantalla. Un estilo
+        // inline nunca lo hubiera dejado (gana siempre sobre una clase,
+        // sin importar breakpoint) — exactamente lo que mantenía las 4
+        // columnas fijas incluso en celular y encimaba los montos
+        // (reportado por el usuario, captura real adjunta).
+        className={compact ? undefined : "grid-cols-2 sm:grid-cols-4"}
         style={{
           display: "grid",
           // minmax(0, 1fr) y no 1fr a secas: una celda de grid tiene
@@ -76,12 +84,22 @@ export default function DashboardScreen({ variant = "full", revealAt = 0 }: Prop
           // columna queda recortada por el overflow:hidden del lienzo —
           // se veía como una tarjeta "pegada"/cortada contra el borde
           // (reportado por el usuario, reproducido en vivo a 1024px).
-          gridTemplateColumns: compact ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))",
+          // Ojo: si "full" trajera aquí CUALQUIER valor de
+          // gridTemplateColumns (incluido "none"), un estilo inline gana
+          // siempre sobre una clase sin importar el valor — las clases de
+          // Tailwind de arriba nunca podrían aplicar. Por eso la rama
+          // !compact no mete la llave en absoluto, no la pone en "none".
+          ...(compact ? { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" } : {}),
           gap: compact ? 6 : 10,
         }}
       >
         {(compact ? metricCards.slice(0, 2) : metricCards).map((m, i) => {
           const r = reveal(0.2 + i * 0.13);
+          // Las 4 tarjetas se quedan visibles en todos los anchos (ocultar
+          // "Total gastos" en móvil se probó y el usuario prefirió
+          // conservarlas completas) — el ajuste que sí evita el encimado es
+          // en MetricCard: el valor usa clamp() + ellipsis, así se angosta
+          // solo donde hace falta en vez de desaparecer una tarjeta.
           return (
             <div key={m.label} className={r.className} style={{ minWidth: 0, ...r.style }}>
               <MetricCard {...m} />

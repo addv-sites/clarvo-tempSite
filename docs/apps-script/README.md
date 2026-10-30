@@ -32,7 +32,10 @@ comportamiento nuevo que yo agregara.
   llega una cotización) con empresa, contacto, correo, teléfono, módulos
   seleccionados y notas.
 - Cada cotización dispara su propio correo a `antonio.prado@addv.mx` con
-  asunto `Clarvo Cotización — {empresa}` y el detalle completo en el cuerpo.
+  asunto fijo `Clarvo - Cotización` (antes `Clarvo Cotización — {empresa}`,
+  cambiado a petición del usuario 2026-10-29 — el nombre de la empresa ya
+  va en el cuerpo del correo, no hace falta repetirlo en el asunto) y el
+  detalle completo en el cuerpo.
 
 ## Contrato de payload esperado por el frontend (Segmento 4)
 

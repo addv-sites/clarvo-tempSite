@@ -94,7 +94,7 @@ function handleCotizador(data) {
 
   MailApp.sendEmail({
     to: CONFIG.NOTIFY_EMAIL,
-    subject: "Clarvo Cotización — " + (data.empresa || "Empresa sin nombre"),
+    subject: "Clarvo - Cotización",
     body:
       "Nueva solicitud de cotización a la medida desde el sitio de Clarvo.\n\n" +
       "Empresa: " + (data.empresa || "—") + "\n" +
