@@ -153,6 +153,7 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     precio_anual: string | null;
     max_usuarios: number | null;
     disco_cuota_mb: number | null;
+    destacado: number;
     facturacion_habilitada: number;
     ventas_habilitado: number;
     gastos_habilitado: number;
@@ -257,7 +258,10 @@ import OnboardingModal from "../onboarding/OnboardingModal";
 
   function tarjetaHtml(plan: PlanApi, index: number): string {
     const clave = plan.nombre.replace(/^CLARVO\s+/i, "").toLowerCase();
-    const destacado = clave === "controla";
+    // Punto 461 (2026-10-31): antes hardcodeado a clave === "controla" —
+    // ahora viene de control/ (botón de estrella en /control → Planes),
+    // exclusivo (nunca más de un plan destacado a la vez).
+    const destacado = Number(plan.destacado) === 1;
     const precioMensual = Number(plan.precio_mensual ?? 0);
     const precioAnual = Number(plan.precio_anual ?? 0);
     const sinPrecio = plan.precio_mensual === null;
