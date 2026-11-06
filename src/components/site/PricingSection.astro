@@ -135,6 +135,98 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     max-height: 0;
     margin-top: 0;
   }
+
+  /* Botones "Actualizando" durante deploy (punto en curso, propuesta C
+     confirmada por el usuario): se activan solos cuando GET
+     /api/public/planes falla (control detenido en el VPS durante el
+     deploy) — nunca por un flag manual. Ámbar (#f0a93e) es el único color
+     "warn" del sitio, deliberadamente separado del cian de marca — mismo
+     criterio que --color-accent-success en los módulos del catálogo:
+     semántica propia, no una variante del acento. */
+  .cta-updating {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    border: 1px solid rgba(240, 169, 62, 0.35);
+    background: var(--color-surface-card-hover);
+    color: var(--color-text-secondary);
+    padding: 0.8rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .cta-updating:hover {
+    border-color: rgba(240, 169, 62, 0.55);
+  }
+  .cta-updating:focus-visible {
+    outline: 2px solid var(--color-accent-electric);
+    outline-offset: 2px;
+  }
+  .cta-updating::after {
+    content: "";
+    position: absolute;
+    left: -40%;
+    bottom: 0;
+    height: 2px;
+    width: 40%;
+    background: #f0a93e;
+    border-radius: 0 2px 2px 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cta-updating::after {
+      animation: cta-updating-sweep 1.6s ease-in-out infinite;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cta-updating::after {
+      left: 0;
+      width: 100%;
+      opacity: 0.5;
+    }
+  }
+  @keyframes cta-updating-sweep {
+    0% {
+      left: -40%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+
+  [data-updating-banner] {
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid rgba(240, 169, 62, 0.35);
+    background: var(--color-surface-elevated);
+    border-radius: 14px;
+    padding: 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.28s ease,
+      opacity 0.28s ease,
+      padding 0.28s ease;
+  }
+  [data-updating-banner].is-shown {
+    max-height: 120px;
+    opacity: 1;
+    padding: 0.9rem 1.1rem;
+  }
+  [data-updating-banner] svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: #f0a93e;
+  }
+  [data-updating-banner] strong {
+    color: var(--color-text-primary);
+  }
 </style>
 
 <script>
@@ -319,6 +411,58 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     statusEl?.classList.add("is-gone");
   }
 
+  // Nombres fijos usados SOLO para la rejilla "Actualizando" (control
+  // detenido, el catálogo real no se puede consultar) — los 4 planes
+  // públicos del sitio en este punto. Si el catálogo real cambia de
+  // nombres, actualizar esta lista también (no se puede derivar de la
+  // API: es precisamente la API la que no responde).
+  const PLANES_FALLBACK = ["Solicita", "Controla", "Crece", "Domina"];
+  const ICONO_RELOJ = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/>');
+
+  let pollActualizandoTimer: ReturnType<typeof setInterval> | null = null;
+
+  function detenerPollActualizando() {
+    if (pollActualizandoTimer !== null) {
+      clearInterval(pollActualizandoTimer);
+      pollActualizandoTimer = null;
+    }
+  }
+
+  // Botones "Actualizando" durante deploy (propuesta C, confirmada por el
+  // usuario): se renderiza solo cuando el fetch a /api/public/planes
+  // falla (control detenido en el VPS mientras dura el deploy) — nunca
+  // por un flag manual. Un solo banner compartido debajo de la fila
+  // (no uno por botón) con mensaje al hacer clic en cualquiera; vuelve
+  // sola a los planes reales en cuanto control responde de nuevo
+  // (reintento periódico, nunca requiere recargar la página a mano).
+  function renderFallbackActualizando(gridEl: Element, statusEl: Element | null) {
+    gridEl.innerHTML = `
+      <div class="col-span-full">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          ${PLANES_FALLBACK.map(() => '<button type="button" class="cta-updating" data-fallback-btn>Actualizando</button>').join("")}
+        </div>
+        <div class="col-span-full" data-updating-banner>
+          ${ICONO_RELOJ}
+          <span><strong>Estamos actualizando Clarvo a una nueva versión.</strong> En unos minutos más podrás contratar tus servicios — vuelve a intentarlo en breve.</span>
+        </div>
+      </div>`;
+    gridEl.setAttribute("aria-busy", "false");
+    statusGone(statusEl);
+
+    const banner = gridEl.querySelector("[data-updating-banner]");
+    gridEl.querySelectorAll<HTMLButtonElement>("[data-fallback-btn]").forEach((btn) => {
+      btn.addEventListener("click", () => banner?.classList.add("is-shown"));
+    });
+
+    // Reintento periódico silencioso: en cuanto control vuelva a
+    // responder, cargarPlanes() reemplaza esta rejilla por las tarjetas
+    // reales — el visitante nunca necesita recargar la página.
+    detenerPollActualizando();
+    pollActualizandoTimer = setInterval(() => {
+      cargarPlanes();
+    }, 15000);
+  }
+
   async function cargarPlanes() {
     const gridEl = document.querySelector("[data-pricing-grid]");
     const statusEl = document.querySelector("[data-pricing-status]");
@@ -339,6 +483,7 @@ import OnboardingModal from "../onboarding/OnboardingModal";
         statusGone(statusEl);
         return;
       }
+      detenerPollActualizando();
       gridEl.innerHTML = data.planes.map((p, i) => tarjetaHtml(p, i)).join("");
       gridEl.setAttribute("aria-busy", "false");
       // Las tarjetas se inyectan DESPUÉS del fetch async — el
@@ -351,9 +496,9 @@ import OnboardingModal from "../onboarding/OnboardingModal";
       wireGrid();
       statusDone(statusEl);
     } catch {
-      gridEl.innerHTML = '<p class="col-span-full text-center text-sm text-text-muted">No pudimos cargar los planes. Intenta recargar la página.</p>';
-      gridEl.setAttribute("aria-busy", "false");
-      statusGone(statusEl);
+      // control detenido (deploy) o cualquier otra falla de red — mismo
+      // tratamiento: el visitante ve "Actualizando", nunca un error crudo.
+      renderFallbackActualizando(gridEl, statusEl);
     }
   }
 
