@@ -36,14 +36,13 @@ import HeroWaveBackground from "../three/HeroWaveBackground";
         </a>
         <button
           type="button"
-          class="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-base font-semibold text-text-secondary opacity-60"
-          aria-disabled="true"
-          title="Video pendiente de producción — placeholder honesto, no hay archivo real aún"
+          id="hero-video-trigger"
+          class="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-base font-semibold text-text-secondary transition hover:border-white/30 hover:text-text-primary"
         >
           <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor" aria-hidden="true">
             <path d="M8 5v14l11-7z" />
           </svg>
-          Ver video (próximamente)
+          Ver video
         </button>
       </div>
 
@@ -65,4 +64,64 @@ import HeroWaveBackground from "../three/HeroWaveBackground";
       <HeroScene client:visible />
     </div>
   </div>
+
+  <dialog
+    id="hero-video-dialog"
+    class="hero-video-dialog w-full max-w-4xl rounded-2xl border border-white/10 bg-surface-deep p-0 backdrop:bg-black/80 backdrop:backdrop-blur-sm"
+  >
+    <div class="relative">
+      <button
+        type="button"
+        id="hero-video-close"
+        aria-label="Cerrar video"
+        class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-surface-deep text-text-secondary transition hover:text-text-primary sm:-top-4 sm:-right-4"
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
+        </svg>
+      </button>
+      <video
+        id="hero-video-player"
+        class="aspect-video w-full rounded-2xl bg-black"
+        controls
+        preload="none"
+        poster="/videos/hero-demo-poster.jpg"
+      >
+        <source src="/videos/hero-demo.mp4" type="video/mp4" />
+        Tu navegador no soporta la reproducción de video.
+      </video>
+    </div>
+  </dialog>
 </section>
+
+<style>
+  .hero-video-dialog {
+    margin: auto;
+  }
+  .hero-video-dialog::backdrop {
+    background: rgba(2, 6, 23, 0.8);
+  }
+</style>
+
+<script>
+  const trigger = document.getElementById("hero-video-trigger") as HTMLButtonElement | null;
+  const dialog = document.getElementById("hero-video-dialog") as HTMLDialogElement | null;
+  const closeBtn = document.getElementById("hero-video-close") as HTMLButtonElement | null;
+  const video = document.getElementById("hero-video-player") as HTMLVideoElement | null;
+
+  trigger?.addEventListener("click", () => {
+    dialog?.showModal();
+    video?.play().catch(() => {});
+  });
+
+  function closeDialog() {
+    video?.pause();
+    dialog?.close();
+  }
+
+  closeBtn?.addEventListener("click", closeDialog);
+  dialog?.addEventListener("click", (e) => {
+    if (e.target === dialog) closeDialog();
+  });
+  dialog?.addEventListener("close", () => video?.pause());
+</script>
