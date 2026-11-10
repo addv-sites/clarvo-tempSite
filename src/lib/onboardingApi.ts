@@ -141,3 +141,17 @@ export async function slugDisponible(slug: string): Promise<boolean> {
   );
   return data.disponible;
 }
+
+// Switch prueba/producción de Stripe (/control). Se consulta una sola
+// vez, antes de abrir el wizard — si el sitio sigue en modo prueba,
+// OnboardingModal muestra el aviso de mantenimiento en vez del wizard.
+// Nunca bloquea una compra real: si esta llamada falla (red, /control
+// caído un momento), el caller trata el error como "modo producción"
+// (fail-open, decisión explícita del negocio — el aviso es cortesía, no
+// un candado de seguridad).
+export type ModoCobro = "prueba" | "produccion";
+
+export async function modoCobro(): Promise<ModoCobro> {
+  const data = await solicitar<{ modo: ModoCobro }>("/api/public/onboarding/modo-cobro");
+  return data.modo;
+}

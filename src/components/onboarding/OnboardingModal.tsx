@@ -6,6 +6,7 @@ import {
   crearBorrador,
   obtenerBorrador,
   slugDisponible,
+  modoCobro,
   OnboardingApiError,
   type Ciclo,
   type EstadoPago,
@@ -90,6 +91,19 @@ const ESTADO_INICIAL: EstadoBorrador = {
   adminPassword2: "",
 };
 
+// Consulta el modo de cobro UNA sola vez por carga de página (varios
+// clics en "Comprar" durante la misma visita no deben disparar varios
+// fetches) — fail-open a propósito: si la consulta falla, se trata como
+// "producción" para nunca bloquear una venta real por un problema
+// técnico ajeno al cobro (decisión explícita del negocio).
+let modoCobroCache: Promise<"prueba" | "produccion"> | null = null;
+function resolverModoCobro(): Promise<"prueba" | "produccion"> {
+  if (!modoCobroCache) {
+    modoCobroCache = modoCobro().catch(() => "produccion" as const);
+  }
+  return modoCobroCache;
+}
+
 export default function OnboardingModal() {
   const [abierto, setAbierto] = useState(false);
   const [paso, setPaso] = useState<Paso>("plan");
@@ -100,20 +114,34 @@ export default function OnboardingModal() {
   const [pagoInfo, setPagoInfo] = useState<EstadoPago | null>(null);
   const [slugEstado, setSlugEstado] = useState<"idle" | "revisando" | "disponible" | "tomado">("idle");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [gateMantenimiento, setGateMantenimiento] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slugTocado = useRef(false);
+  const detallePendienteRef = useRef<{ planClave: string; ciclo?: Ciclo } | null>(null);
+
+  function abrirWizardReal(detalle: { planClave: string; ciclo?: Ciclo }) {
+    slugTocado.current = false;
+    setError(null);
+    setSlugEstado("idle");
+    setResultadoActivacion(null);
+    setGateMantenimiento(false);
+    setPaso("plan");
+    setEstado({ ...ESTADO_INICIAL, planClave: detalle.planClave, ciclo: detalle.ciclo || "mensual" });
+    setAbierto(true);
+  }
 
   useEffect(() => {
-    function onAbrir(e: Event) {
+    async function onAbrir(e: Event) {
       const detalle = (e as CustomEvent<{ planClave: string; ciclo?: Ciclo }>).detail;
-      slugTocado.current = false;
-      setError(null);
-      setSlugEstado("idle");
-      setResultadoActivacion(null);
-      setPaso("plan");
-      setEstado({ ...ESTADO_INICIAL, planClave: detalle.planClave, ciclo: detalle.ciclo || "mensual" });
-      setAbierto(true);
+      const modo = await resolverModoCobro();
+      if (modo === "prueba") {
+        detallePendienteRef.current = detalle;
+        setGateMantenimiento(true);
+        setAbierto(true);
+        return;
+      }
+      abrirWizardReal(detalle);
     }
     window.addEventListener("clarvo:abrir-onboarding", onAbrir);
     return () => window.removeEventListener("clarvo:abrir-onboarding", onAbrir);
@@ -384,6 +412,20 @@ export default function OnboardingModal() {
           </div>
         )}
 
+        {gateMantenimiento && (
+          <PasoGateMantenimiento
+            onEntendido={() => {
+              window.location.href = "/masterclass";
+            }}
+            onContinuar={() => {
+              const detalle = detallePendienteRef.current;
+              if (detalle) abrirWizardReal(detalle);
+            }}
+          />
+        )}
+
+        {!gateMantenimiento && (
+        <>
         {paso === "plan" && (
           <PasoPlan
             estado={estado}
@@ -477,6 +519,8 @@ export default function OnboardingModal() {
         {paso === "completado" && (
           <PasoCompletado estado={estado} resultado={resultadoActivacion} pagoInfo={pagoInfo} onCerrar={cerrar} />
         )}
+        </>
+        )}
       </div>
     </div>
   );
@@ -488,6 +532,55 @@ function Titulo({ eyebrow, children }: { eyebrow: string; children: React.ReactN
       <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-accent-electric">{eyebrow}</span>
       <h2 className="font-display text-xl font-bold text-text-primary">{children}</h2>
     </>
+  );
+}
+
+// Aviso de mantenimiento (switch de /control en modo prueba) — se
+// muestra en vez del wizard, nunca lo reemplaza de forma permanente:
+// "Continuar" abre el wizard real tal cual, con el plan/ciclo que el
+// visitante ya había elegido.
+function PasoGateMantenimiento({
+  onEntendido,
+  onContinuar,
+}: {
+  onEntendido: () => void;
+  onContinuar: () => void;
+}) {
+  return (
+    <div>
+      <Titulo eyebrow="Un momento">Estamos afinando los últimos detalles de pago</Titulo>
+      <p className="mt-2 text-sm text-text-secondary">
+        Mientras tanto, puedes conocer nuestra Masterclass gratuita o seguir con tu compra — no perdiste nada de lo
+        que ya elegiste.
+      </p>
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={onEntendido}
+          className="flex flex-col items-start gap-2 rounded-2xl border border-border-translucent bg-surface p-4 text-left transition hover:border-accent-electric/50"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5 text-accent-electric" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <polygon points="10 8 16 12 10 16 10 8" />
+          </svg>
+          <span className="text-sm font-semibold text-text-primary">Entendido</span>
+          <span className="text-xs text-text-secondary">Ver la Masterclass gratuita</span>
+        </button>
+        <button
+          type="button"
+          onClick={onContinuar}
+          className="flex flex-col items-start gap-2 rounded-2xl border border-accent-electric/40 bg-accent-electric/10 p-4 text-left transition hover:border-accent-electric"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5 text-accent-electric" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          <span className="text-sm font-semibold text-text-primary">Continuar</span>
+          <span className="text-xs text-text-secondary">Seguir con la compra de tu paquete</span>
+        </button>
+      </div>
+    </div>
   );
 }
 
