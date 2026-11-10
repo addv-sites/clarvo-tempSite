@@ -155,3 +155,27 @@ export async function modoCobro(): Promise<ModoCobro> {
   const data = await solicitar<{ modo: ModoCobro }>("/api/public/onboarding/modo-cobro");
   return data.modo;
 }
+
+// Precios reales del catálogo (/control → Planes) — misma fuente que ya
+// usa PricingSection.astro para pintar las tarjetas. El wizard de
+// OnboardingModal tenía su PROPIA tabla de precios hardcodeada,
+// desincronizada del catálogo real: cambiar un precio en /control se
+// veía reflejado en la landing pero NO en el wizard (bug real reportado
+// por el usuario, 10 nov 2026) — esta función es la fuente única que
+// reemplaza esa tabla.
+export interface PlanPublico {
+  nombre: string;
+  precioMensual: number | null;
+  precioAnual: number | null;
+}
+
+export async function planesPublicos(): Promise<PlanPublico[]> {
+  const data = await solicitar<{
+    planes: Array<{ nombre: string; precio_mensual: string | null; precio_anual: string | null }>;
+  }>("/api/public/planes");
+  return (data.planes || []).map((p) => ({
+    nombre: p.nombre,
+    precioMensual: p.precio_mensual === null ? null : Number(p.precio_mensual),
+    precioAnual: p.precio_anual === null ? null : Number(p.precio_anual),
+  }));
+}

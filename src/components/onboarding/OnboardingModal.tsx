@@ -7,6 +7,7 @@ import {
   obtenerBorrador,
   slugDisponible,
   modoCobro,
+  planesPublicos,
   OnboardingApiError,
   type Ciclo,
   type EstadoPago,
@@ -34,6 +35,13 @@ interface ResultadoActivacion {
   urlPortal: string | null;
 }
 
+// Solo fallback visual MIENTRAS carga el catálogo real (abajo) — nunca
+// la fuente real del precio. Antes de este punto (10 nov 2026) había
+// además PLAN_PRECIO_MENSUAL/PLAN_PRECIO_ANUAL hardcodeados: cambiar un
+// precio en /control → Planes se reflejaba en la landing (que ya lee el
+// catálogo real) pero NO aquí — el wizard seguía cobrando/mostrando el
+// precio viejo para siempre. Eliminados a propósito; ver
+// resolverPreciosPlanes() más abajo, la única fuente real ahora.
 const PLAN_NOMBRE: Record<string, string> = {
   solicita: "CLARVO Solicita",
   controla: "CLARVO Controla",
@@ -41,8 +49,37 @@ const PLAN_NOMBRE: Record<string, string> = {
   domina: "CLARVO Domina",
 };
 
-const PLAN_PRECIO_MENSUAL: Record<string, number> = { solicita: 199, controla: 599, crece: 799, domina: 999 };
-const PLAN_PRECIO_ANUAL: Record<string, number> = { solicita: 1990, controla: 5990, crece: 7990, domina: 9990 };
+interface InfoPlan {
+  nombre: string;
+  mensual: number;
+  anual: number;
+}
+
+// Catálogo real de precios — igual que resolverModoCobro(), se consulta
+// una sola vez por carga de página (varios clics en "Comprar" durante la
+// misma visita no deben disparar varios fetches) pero SÍ se reintenta en
+// el siguiente intento si falló (a diferencia del modo de cobro, no hay
+// un "precio por default seguro" al que caer — un fallo real debe
+// bloquear, nunca inventar un número).
+let preciosPlanesCache: Promise<Record<string, InfoPlan>> | null = null;
+function resolverPreciosPlanes(): Promise<Record<string, InfoPlan>> {
+  if (!preciosPlanesCache) {
+    preciosPlanesCache = planesPublicos()
+      .then((planes) => {
+        const mapa: Record<string, InfoPlan> = {};
+        for (const p of planes) {
+          const clave = p.nombre.replace(/^CLARVO\s+/i, "").toLowerCase();
+          mapa[clave] = { nombre: p.nombre, mensual: p.precioMensual ?? 0, anual: p.precioAnual ?? 0 };
+        }
+        return mapa;
+      })
+      .catch((err) => {
+        preciosPlanesCache = null;
+        throw err;
+      });
+  }
+  return preciosPlanesCache;
+}
 
 const ZONAS = ["America/Mexico_City", "America/Tijuana", "America/Monterrey", "America/Cancun"];
 
@@ -115,6 +152,7 @@ export default function OnboardingModal() {
   const [slugEstado, setSlugEstado] = useState<"idle" | "revisando" | "disponible" | "tomado">("idle");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [gateMantenimiento, setGateMantenimiento] = useState(false);
+  const [preciosPlanes, setPreciosPlanes] = useState<Record<string, InfoPlan>>({});
   const dialogRef = useRef<HTMLDivElement>(null);
   const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slugTocado = useRef(false);
@@ -134,14 +172,22 @@ export default function OnboardingModal() {
   useEffect(() => {
     async function onAbrir(e: Event) {
       const detalle = (e as CustomEvent<{ planClave: string; ciclo?: Ciclo }>).detail;
-      const modo = await resolverModoCobro();
+      const [modo, precios] = await Promise.all([
+        resolverModoCobro(),
+        resolverPreciosPlanes().catch(() => null),
+      ]);
+      if (precios) setPreciosPlanes(precios);
       if (modo === "prueba") {
         detallePendienteRef.current = detalle;
         setGateMantenimiento(true);
         setAbierto(true);
-        return;
+      } else {
+        abrirWizardReal(detalle);
       }
-      abrirWizardReal(detalle);
+      // El precio es dato real que se le va a cobrar al visitante — un
+      // fallo de red aquí no puede quedar en silencio ni caer a un
+      // número inventado, a diferencia del modo de cobro (fail-open).
+      if (!precios) setError("No se pudo cargar el precio actual del plan. Cierra esto e inténtalo de nuevo.");
     }
     window.addEventListener("clarvo:abrir-onboarding", onAbrir);
     return () => window.removeEventListener("clarvo:abrir-onboarding", onAbrir);
@@ -269,8 +315,9 @@ export default function OnboardingModal() {
 
   if (!abierto) return null;
 
-  const precio =
-    estado.ciclo === "mensual" ? PLAN_PRECIO_MENSUAL[estado.planClave] : PLAN_PRECIO_ANUAL[estado.planClave];
+  const infoPlanActual = preciosPlanes[estado.planClave];
+  const nombrePlanActual = infoPlanActual?.nombre || PLAN_NOMBRE[estado.planClave];
+  const precio = estado.ciclo === "mensual" ? infoPlanActual?.mensual ?? 0 : infoPlanActual?.anual ?? 0;
 
   async function asegurarBorrador(): Promise<string> {
     if (estado.token) return estado.token;
@@ -391,7 +438,7 @@ export default function OnboardingModal() {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`Activar ${PLAN_NOMBRE[estado.planClave]}`}
+        aria-label={`Activar ${nombrePlanActual}`}
         tabIndex={-1}
         className="relative w-full max-w-md max-h-[88vh] overflow-y-auto rounded-3xl border border-border-specular bg-surface-card p-7 shadow-2xl outline-none"
       >
@@ -429,6 +476,9 @@ export default function OnboardingModal() {
         {paso === "plan" && (
           <PasoPlan
             estado={estado}
+            nombrePlan={nombrePlanActual}
+            precioMensual={infoPlanActual?.mensual ?? 0}
+            precioAnual={infoPlanActual?.anual ?? 0}
             precio={precio}
             cargando={cargando}
             onCambiarCiclo={(ciclo) => setEstado((prev) => ({ ...prev, ciclo }))}
@@ -506,6 +556,7 @@ export default function OnboardingModal() {
         {paso === "pago" && (
           <PasoPago
             estado={estado}
+            nombrePlan={nombrePlanActual}
             precio={precio}
             cargando={cargando}
             turnstileToken={turnstileToken}
@@ -517,7 +568,14 @@ export default function OnboardingModal() {
         )}
 
         {paso === "completado" && (
-          <PasoCompletado estado={estado} resultado={resultadoActivacion} pagoInfo={pagoInfo} onCerrar={cerrar} />
+          <PasoCompletado
+            estado={estado}
+            nombrePlan={nombrePlanActual}
+            precio={precio}
+            resultado={resultadoActivacion}
+            pagoInfo={pagoInfo}
+            onCerrar={cerrar}
+          />
         )}
         </>
         )}
@@ -633,12 +691,18 @@ const inputClase =
 
 function PasoPlan({
   estado,
+  nombrePlan,
+  precioMensual,
+  precioAnual,
   precio,
   cargando,
   onCambiarCiclo,
   onContinuar,
 }: {
   estado: EstadoBorrador;
+  nombrePlan: string;
+  precioMensual: number;
+  precioAnual: number;
   precio: number;
   cargando: boolean;
   onCambiarCiclo: (c: Ciclo) => void;
@@ -648,7 +712,7 @@ function PasoPlan({
     <div>
       <Titulo eyebrow="Paso 1 de 5">Confirma tu plan</Titulo>
       <p className="mt-2 text-sm text-text-secondary">
-        Elegiste <strong className="text-text-primary">{PLAN_NOMBRE[estado.planClave]}</strong>. Puedes cambiar el
+        Elegiste <strong className="text-text-primary">{nombrePlan}</strong>. Puedes cambiar el
         ciclo de cobro antes de continuar.
       </p>
       <div className="mt-5 inline-flex rounded-full border border-border-translucent bg-surface p-1">
@@ -659,7 +723,7 @@ function PasoPlan({
             estado.ciclo === "mensual" ? "bg-accent-electric text-surface-deep" : "text-text-secondary"
           }`}
         >
-          Mensual · ${dinero(PLAN_PRECIO_MENSUAL[estado.planClave])}
+          Mensual · ${dinero(precioMensual)}
         </button>
         <button
           type="button"
@@ -668,7 +732,7 @@ function PasoPlan({
             estado.ciclo === "anual" ? "bg-accent-electric text-surface-deep" : "text-text-secondary"
           }`}
         >
-          Anual · ${dinero(PLAN_PRECIO_ANUAL[estado.planClave])} (2 meses gratis)
+          Anual · ${dinero(precioAnual)} (2 meses gratis)
         </button>
       </div>
       <p className="mt-4 text-2xl font-extrabold text-text-primary">
@@ -684,6 +748,7 @@ function PasoPlan({
 
 function PasoPago({
   estado,
+  nombrePlan,
   precio,
   cargando,
   turnstileToken,
@@ -693,6 +758,7 @@ function PasoPago({
   onContinuar,
 }: {
   estado: EstadoBorrador;
+  nombrePlan: string;
   precio: number;
   cargando: boolean;
   turnstileToken: string | null;
@@ -705,7 +771,7 @@ function PasoPago({
     <div>
       <Titulo eyebrow="Paso 5 de 5">Método de pago</Titulo>
       <p className="mt-2 text-sm text-text-secondary">
-        {PLAN_NOMBRE[estado.planClave]} · ${dinero(precio)}
+        {nombrePlan} · ${dinero(precio)}
         {estado.ciclo === "mensual" ? "/mes" : "/año"}
       </p>
       <div className="mt-5 rounded-xl border border-accent-electric/30 bg-accent-electric/5 p-4 text-sm text-text-secondary">
@@ -1007,11 +1073,15 @@ function PasoCredenciales({
 
 function PasoCompletado({
   estado,
+  nombrePlan,
+  precio,
   resultado,
   pagoInfo,
   onCerrar,
 }: {
   estado: EstadoBorrador;
+  nombrePlan: string;
+  precio: number;
   resultado: ResultadoActivacion | null;
   pagoInfo: EstadoPago | null;
   onCerrar: () => void;
@@ -1056,7 +1126,7 @@ function PasoCompletado({
         </div>
         <h2 className="font-display text-xl font-bold text-text-primary">Tu cuenta ya está activa</h2>
         <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-          {PLAN_NOMBRE[estado.planClave]} para <span className="text-text-primary">clarvo.mx/{resultado.slug}</span>.
+          {nombrePlan} para <span className="text-text-primary">clarvo.mx/{resultado.slug}</span>.
           {estado.adminEmail || estado.contactoEmail ? (
             <>
               {" "}Te enviamos tus accesos a{" "}
@@ -1100,10 +1170,7 @@ function PasoCompletado({
   // recalca lo que YA se hizo y traduce el precio a un número chico
   // diario, en vez de solo pedir paciencia.
   const metodo = pagoInfo?.metodoPago;
-  const precioDia = Math.round(
-    (estado.ciclo === "mensual" ? PLAN_PRECIO_MENSUAL[estado.planClave] : PLAN_PRECIO_ANUAL[estado.planClave]) /
-      (estado.ciclo === "mensual" ? 30 : 365)
-  );
+  const precioDia = Math.round(precio / (estado.ciclo === "mensual" ? 30 : 365));
 
   return (
     <div className="text-center">
