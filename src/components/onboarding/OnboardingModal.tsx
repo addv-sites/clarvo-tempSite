@@ -109,6 +109,7 @@ interface EstadoBorrador {
   contactoEmail: string;
   nombreComercial: string;
   zonaHoraria: string;
+  adminNombre: string;
   adminEmail: string;
   adminPassword: string;
   adminPassword2: string;
@@ -123,6 +124,7 @@ const ESTADO_INICIAL: EstadoBorrador = {
   contactoEmail: "",
   nombreComercial: "",
   zonaHoraria: "America/Mexico_City",
+  adminNombre: "",
   adminEmail: "",
   adminPassword: "",
   adminPassword2: "",
@@ -245,6 +247,7 @@ export default function OnboardingModal() {
           contactoEmail: borrador.contactoEmail || "",
           nombreComercial: borrador.nombreComercial || "",
           zonaHoraria: borrador.zonaHoraria || "America/Mexico_City",
+          adminNombre: borrador.adminNombre || "",
           adminEmail: borrador.adminEmail || "",
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: borrador.token, planClave: borrador.planClave }));
@@ -338,6 +341,7 @@ export default function OnboardingModal() {
           contactoEmail: borrador.contactoEmail || prev.contactoEmail,
           nombreComercial: borrador.nombreComercial || prev.nombreComercial,
           zonaHoraria: borrador.zonaHoraria || prev.zonaHoraria,
+          adminNombre: borrador.adminNombre || prev.adminNombre,
           adminEmail: borrador.adminEmail || prev.adminEmail,
         }));
         return borrador.token;
@@ -400,7 +404,11 @@ export default function OnboardingModal() {
       setError("Las contraseñas no coinciden.");
       return;
     }
-    await avanzar("pago", { adminEmail: estado.adminEmail, adminPassword: estado.adminPassword });
+    await avanzar("pago", {
+      adminNombre: estado.adminNombre,
+      adminEmail: estado.adminEmail,
+      adminPassword: estado.adminPassword,
+    });
   }
 
   function revisarSlug(valor: string) {
@@ -545,6 +553,7 @@ export default function OnboardingModal() {
           <PasoCredenciales
             estado={estado}
             cargando={cargando}
+            onCambiarNombreAdmin={(adminNombre) => setEstado((prev) => ({ ...prev, adminNombre }))}
             onCambiarCorreoAdmin={(adminEmail) => setEstado((prev) => ({ ...prev, adminEmail }))}
             onCambiarPassword={(adminPassword) => setEstado((prev) => ({ ...prev, adminPassword }))}
             onCambiarPassword2={(adminPassword2) => setEstado((prev) => ({ ...prev, adminPassword2 }))}
@@ -949,6 +958,7 @@ function PasoConfig({
 function PasoCredenciales({
   estado,
   cargando,
+  onCambiarNombreAdmin,
   onCambiarCorreoAdmin,
   onCambiarPassword,
   onCambiarPassword2,
@@ -957,6 +967,7 @@ function PasoCredenciales({
 }: {
   estado: EstadoBorrador;
   cargando: boolean;
+  onCambiarNombreAdmin: (v: string) => void;
   onCambiarCorreoAdmin: (v: string) => void;
   onCambiarPassword: (v: string) => void;
   onCambiarPassword2: (v: string) => void;
@@ -977,7 +988,11 @@ function PasoCredenciales({
   const reglasPassword = REGLAS_PASSWORD.map((r) => ({ ...r, ok: r.cumple(estado.adminPassword) }));
   const passwordValida = reglasPassword.every((r) => r.ok);
 
-  const puedeContinuar = estado.adminEmail.includes("@") && passwordValida && estado.adminPassword2.length >= 8;
+  const puedeContinuar =
+    estado.adminNombre.trim().length >= 3 &&
+    estado.adminEmail.includes("@") &&
+    passwordValida &&
+    estado.adminPassword2.length >= 8;
 
   return (
     <div>
@@ -985,6 +1000,16 @@ function PasoCredenciales({
       <p className="mt-2 text-sm text-text-secondary">Con esto vas a entrar a tu /admin en cuanto esté listo.</p>
 
       <div className="mt-5">
+        <Campo label="Nombre completo">
+          <input
+            type="text"
+            className={inputClase}
+            value={estado.adminNombre}
+            onChange={(e) => onCambiarNombreAdmin(e.target.value)}
+            placeholder="María Fernanda Torres López"
+            autoComplete="name"
+          />
+        </Campo>
         <Campo label="Correo del administrador">
           <input
             type="email"

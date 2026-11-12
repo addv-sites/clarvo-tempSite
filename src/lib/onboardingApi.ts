@@ -20,6 +20,7 @@ export interface Borrador {
   contactoEmail: string | null;
   nombreComercial: string | null;
   zonaHoraria: string;
+  adminNombre: string | null;
   adminEmail: string | null;
   tieneContrasena: boolean;
   pasoActual: string;
