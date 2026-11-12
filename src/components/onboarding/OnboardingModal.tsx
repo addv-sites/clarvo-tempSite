@@ -12,7 +12,7 @@ import {
   type Ciclo,
   type EstadoPago,
 } from "../../lib/onboardingApi";
-import TurnstileWidget from "./TurnstileWidget";
+import RecaptchaWidget from "./RecaptchaWidget";
 
 // Orden real del wizard (punto 429, corregido): el pago es el ÚLTIMO
 // paso antes de redirigir a Stripe, nunca el segundo. El webhook de
@@ -152,7 +152,7 @@ export default function OnboardingModal() {
   const [resultadoActivacion, setResultadoActivacion] = useState<ResultadoActivacion | null>(null);
   const [pagoInfo, setPagoInfo] = useState<EstadoPago | null>(null);
   const [slugEstado, setSlugEstado] = useState<"idle" | "revisando" | "disponible" | "tomado">("idle");
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [gateMantenimiento, setGateMantenimiento] = useState(false);
   const [preciosPlanes, setPreciosPlanes] = useState<Record<string, InfoPlan>>({});
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -371,12 +371,12 @@ export default function OnboardingModal() {
   }
 
   // Último paso del wizard: ya NO activa nada directo — crea el Checkout
-  // Session real y manda al visitante a pagar en Stripe. El Turnstile se
+  // Session real y manda al visitante a pagar en Stripe. El reCAPTCHA se
   // exige AQUÍ: este es el único paso que de verdad mueve dinero/llama a
   // la API de Stripe, así que es el que hay que proteger de bots — ver
-  // DOCS/confStripe.html.
+  // DOCS/recaptcha.html y DOCS/confStripe.html.
   async function irAPagar() {
-    if (!turnstileToken) {
+    if (!recaptchaToken) {
       setError("Completa la verificación de seguridad antes de continuar.");
       return;
     }
@@ -385,11 +385,11 @@ export default function OnboardingModal() {
     try {
       const token = await asegurarBorrador();
       await actualizarBorrador(token, { ciclo: estado.ciclo, pasoActual: "pago" });
-      const { checkoutUrl } = await pagarBorrador(token, turnstileToken);
+      const { checkoutUrl } = await pagarBorrador(token, recaptchaToken);
       window.location.href = checkoutUrl;
     } catch (err) {
       setError(err instanceof OnboardingApiError ? err.message : "Ocurrió un error. Intenta de nuevo.");
-      setTurnstileToken(null);
+      setRecaptchaToken(null);
     } finally {
       setCargando(false);
     }
@@ -568,9 +568,9 @@ export default function OnboardingModal() {
             nombrePlan={nombrePlanActual}
             precio={precio}
             cargando={cargando}
-            turnstileToken={turnstileToken}
-            onTurnstileToken={setTurnstileToken}
-            onTurnstileExpire={() => setTurnstileToken(null)}
+            recaptchaToken={recaptchaToken}
+            onRecaptchaToken={setRecaptchaToken}
+            onRecaptchaExpire={() => setRecaptchaToken(null)}
             onAtras={() => setPaso("credenciales")}
             onContinuar={irAPagar}
           />
@@ -760,9 +760,9 @@ function PasoPago({
   nombrePlan,
   precio,
   cargando,
-  turnstileToken,
-  onTurnstileToken,
-  onTurnstileExpire,
+  recaptchaToken,
+  onRecaptchaToken,
+  onRecaptchaExpire,
   onAtras,
   onContinuar,
 }: {
@@ -770,9 +770,9 @@ function PasoPago({
   nombrePlan: string;
   precio: number;
   cargando: boolean;
-  turnstileToken: string | null;
-  onTurnstileToken: (token: string) => void;
-  onTurnstileExpire: () => void;
+  recaptchaToken: string | null;
+  onRecaptchaToken: (token: string) => void;
+  onRecaptchaExpire: () => void;
   onAtras: () => void;
   onContinuar: () => void;
 }) {
@@ -788,12 +788,12 @@ function PasoPago({
         OXXO/SPEI (tu cuenta se activa en cuanto se confirme el pago, normalmente de minutos a un par de días).
       </div>
 
-      <TurnstileWidget onToken={onTurnstileToken} onExpire={onTurnstileExpire} />
+      <RecaptchaWidget onToken={onRecaptchaToken} onExpire={onRecaptchaExpire} />
 
       <div className="mt-6 flex gap-3">
         <BotonAtras onClick={onAtras} />
         <div className="flex-1">
-          <BotonContinuar onClick={onContinuar} cargando={cargando} deshabilitado={!turnstileToken}>
+          <BotonContinuar onClick={onContinuar} cargando={cargando} deshabilitado={!recaptchaToken}>
             Pagar ${dinero(precio)} y continuar
           </BotonContinuar>
         </div>

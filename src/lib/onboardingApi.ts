@@ -111,13 +111,14 @@ export interface ResultadoPago {
   checkoutUrl: string;
 }
 
-// Mismo criterio de Turnstile que antes (hallazgo M-06, sonar_1.1.html):
-// este sigue siendo el único paso público que de verdad mueve dinero, así
-// que sigue exigiendo el token de Cloudflare.
-export function pagarBorrador(token: string, turnstileToken: string) {
+// Mismo criterio de reCAPTCHA que antes (hallazgo M-06, sonar_1.1.html;
+// migrado de Cloudflare Turnstile, 2026-11-12): este sigue siendo el
+// único paso público que de verdad mueve dinero, así que sigue exigiendo
+// el token de Google.
+export function pagarBorrador(token: string, recaptchaToken: string) {
   return solicitar<ResultadoPago>(`/api/public/onboarding/pagar/${encodeURIComponent(token)}`, {
     method: "POST",
-    body: JSON.stringify({ turnstileToken }),
+    body: JSON.stringify({ recaptchaToken }),
   });
 }
 

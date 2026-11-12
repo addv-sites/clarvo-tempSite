@@ -31,11 +31,13 @@ export const publicEnv = {
   /** Endpoint de Apps Script que recibe leads de masterclass y cotizaciones. */
   leadsEndpoint: import.meta.env.PUBLIC_LEADS_ENDPOINT || null,
   /**
-   * Site key de Cloudflare Turnstile para el widget del onboarding
-   * (hallazgo M-06, sonar_1.1.html, Fase D). El default es el site key
-   * PÚBLICO de prueba que documenta Cloudflare (siempre pasa, pensado
-   * para desarrollo/CI) — nunca un secreto real. Producción debe
-   * sobreescribirlo con el site key real del dashboard de Cloudflare.
+   * Site key de Google reCAPTCHA v2 (Checkbox) para el widget del
+   * onboarding (hallazgo M-06, sonar_1.1.html, Fase D; migrado de
+   * Cloudflare Turnstile, 2026-11-12 — ver DOCS/recaptcha.html en
+   * portalFac). El default es el site key PÚBLICO de prueba que
+   * documenta Google (siempre pasa, pensado para desarrollo/CI) — nunca
+   * un secreto real. Producción debe sobreescribirlo con el site key
+   * real de la consola de admin de reCAPTCHA.
    */
-  turnstileSiteKey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
+  recaptchaSiteKey: import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
 };

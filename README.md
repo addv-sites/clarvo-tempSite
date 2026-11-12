@@ -68,7 +68,7 @@ posteriores: rebuild + recreate, sin tocar nginx/certbot del host).
 
 ```bash
 # En el VPS, primera vez:
-cp .env.prod.example .env   # llenar PUBLIC_* reales (GA4, Turnstile, leads)
+cp .env.prod.example .env   # llenar PUBLIC_* reales (GA4, reCAPTCHA, leads)
 sudo ./deploy.sh            # build + up + nginx/certbot del host + TLS
 
 # Actualizaciones posteriores (tras git pull / rsync del código nuevo):

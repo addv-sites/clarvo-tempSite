@@ -63,7 +63,7 @@ else
 fi
 
 if [ ! -f "$ENV_FILE" ]; then
-  fail "No existe $ENV_FILE — copia .env.prod.example a .env, llena las variables PUBLIC_* reales (GA4, Turnstile, endpoint de leads) y vuelve a correr."
+  fail "No existe $ENV_FILE — copia .env.prod.example a .env, llena las variables PUBLIC_* reales (GA4, reCAPTCHA, endpoint de leads) y vuelve a correr."
 fi
 
 # ---------- Paso 1: build + up ----------
