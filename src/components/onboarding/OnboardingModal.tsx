@@ -13,6 +13,7 @@ import {
   type EstadoPago,
 } from "../../lib/onboardingApi";
 import RecaptchaWidget from "./RecaptchaWidget";
+import { trackEvent, trackPurchaseOnce } from "../../lib/analytics";
 
 // Orden real del wizard (punto 429, corregido): el pago es el ÚLTIMO
 // paso antes de redirigir a Stripe, nunca el segundo. El webhook de
@@ -169,6 +170,7 @@ export default function OnboardingModal() {
     setPaso("plan");
     setEstado({ ...ESTADO_INICIAL, planClave: detalle.planClave, ciclo: detalle.ciclo || "mensual" });
     setAbierto(true);
+    trackEvent("onboarding_iniciado", { plan: detalle.planClave, ciclo: detalle.ciclo || "mensual" });
   }
 
   useEffect(() => {
@@ -224,8 +226,21 @@ export default function OnboardingModal() {
           // la única fuente confiable para el caso "vengo de pagar".
           const data = await estadoPago(token);
           setPagoInfo(data);
-          if (data.activado && data.resultado) setResultadoActivacion(data.resultado);
           const guardado = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          if (data.activado && data.resultado) {
+            setResultadoActivacion(data.resultado);
+            const planClaveConversion = guardado?.planClave || estado.planClave;
+            resolverPreciosPlanes()
+              .then((precios) => {
+                const info = precios[planClaveConversion];
+                trackPurchaseOnce(token, {
+                  currency: "MXN",
+                  value: estado.ciclo === "anual" ? info?.anual ?? 0 : info?.mensual ?? 0,
+                  items: [{ item_id: planClaveConversion, item_name: info?.nombre || planClaveConversion }],
+                });
+              })
+              .catch(() => trackPurchaseOnce(token, { currency: "MXN", value: 0 }));
+          }
           setEstado((prev) => ({
             ...prev,
             token,
@@ -295,6 +310,16 @@ export default function OnboardingModal() {
         setPagoInfo(data);
         if (data.activado && data.resultado) {
           setResultadoActivacion(data.resultado);
+          resolverPreciosPlanes()
+            .then((precios) => {
+              const info = precios[estado.planClave];
+              trackPurchaseOnce(estado.token as string, {
+                currency: "MXN",
+                value: estado.ciclo === "anual" ? info?.anual ?? 0 : info?.mensual ?? 0,
+                items: [{ item_id: estado.planClave, item_name: info?.nombre || estado.planClave }],
+              });
+            })
+            .catch(() => trackPurchaseOnce(estado.token as string, { currency: "MXN", value: 0 }));
         }
       } catch {
         // Red intermitente — el siguiente tick reintenta, no hace falta
@@ -363,6 +388,7 @@ export default function OnboardingModal() {
       const token = await asegurarBorrador();
       await actualizarBorrador(token, { ...cambios, pasoActual: pasoSiguiente });
       setPaso(pasoSiguiente);
+      trackEvent("onboarding_paso", { paso: pasoSiguiente, plan: estado.planClave, ciclo: estado.ciclo });
     } catch (err) {
       setError(err instanceof OnboardingApiError ? err.message : "Ocurrió un error. Intenta de nuevo.");
     } finally {
@@ -386,6 +412,11 @@ export default function OnboardingModal() {
       const token = await asegurarBorrador();
       await actualizarBorrador(token, { ciclo: estado.ciclo, pasoActual: "pago" });
       const { checkoutUrl } = await pagarBorrador(token, recaptchaToken);
+      trackEvent("begin_checkout", {
+        currency: "MXN",
+        value: precio,
+        items: [{ item_id: estado.planClave, item_name: nombrePlanActual, price: precio }],
+      });
       window.location.href = checkoutUrl;
     } catch (err) {
       setError(err instanceof OnboardingApiError ? err.message : "Ocurrió un error. Intenta de nuevo.");

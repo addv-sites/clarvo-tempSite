@@ -242,3 +242,35 @@ solo build+test+smoke test de la imagen, ya no publica a Pages.
 fetch client-side a `PUBLIC_LEADS_ENDPOINT` (Google Apps Script → Sheet +
 correo) — el sitio sigue 100% estático, sin backend propio, nada de esto
 se tocó al dockerizar. Ver README.md, sección "Despliegue (Docker, VPS)".
+
+## Google Analytics 4 (2026-11-19)
+
+Implementado completo — snippet GA4 + consentimiento de cookies +
+eventos reales del embudo de onboarding:
+
+- `src/components/Analytics.astro`: carga `gtag.js` SOLO si el visitante
+  aceptó cookies analíticas (`src/components/site/CookieConsent.astro` +
+  `src/lib/cookieConsent.ts`, localStorage + `CustomEvent`) y hay
+  `PUBLIC_GA_MEASUREMENT_ID` configurado — sin ID, el snippet nunca se
+  inyecta, cero requests a Google.
+- `src/lib/analytics.ts`: `trackEvent()`/`trackPurchaseOnce()`, no-op
+  silencioso si `window.gtag` no existe (sin consentimiento o sin GA4
+  cargado) — nunca lanza, nunca bloquea el flujo real de alta/pago.
+- 4 eventos conectados en `OnboardingModal.tsx`: `onboarding_iniciado`
+  (se abrió el wizard), `onboarding_paso` (completó un paso),
+  `begin_checkout` (va a pagar), `purchase` (webhook de Stripe confirmó
+  el pago — la conversión real, con monto/plan). `purchase` usa
+  `trackPurchaseOnce(token, ...)` con dedup por `localStorage` — el
+  polling de confirmación de pago (OXXO/SPEI, cada 5s) y una recarga de
+  la página de éxito NUNCA deben reportar la misma alta dos veces.
+- `PUBLIC_GA_MEASUREMENT_ID` ya vive en `.env.example`/`.env.prod.example`/
+  `Dockerfile` (ARG)/`docker-compose.prod.yml`, mismo patrón que
+  `PUBLIC_RECAPTCHA_SITE_KEY` — horneado en el build de Astro, necesita
+  `docker compose build` (nunca basta con reiniciar el contenedor) cada
+  vez que cambie.
+- Guía paso a paso para que el usuario cree la propiedad GA4 y consiga el
+  `G-XXXXXXXXXX` real: `portalFac/DOCS/analiticas.html` (mismo patrón que
+  `portalFac/DOCS/recaptcha.html`). Local actual sin ID real
+  configurado (GA inactivo a propósito) — nunca desplegar a producción
+  sin confirmación explícita del usuario, mismo criterio que cualquier
+  otro deploy real a clarvo.mx.
