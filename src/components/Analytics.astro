@@ -9,41 +9,46 @@ const measurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 {
   measurementId && (
     <script define:vars={{ measurementId }}>
-      {`
-        (function () {
-          var STORAGE_KEY = "clarvo-cookie-consent";
-          var CONSENT_EVENT = "clarvo:cookie-consent-changed";
+      (function () {
+        var STORAGE_KEY = "clarvo-cookie-consent";
+        var CONSENT_EVENT = "clarvo:cookie-consent-changed";
 
-          function hasAnalyticsConsent() {
-            try {
-              var raw = localStorage.getItem(STORAGE_KEY);
-              if (!raw) return false;
-              return JSON.parse(raw).analytics === true;
-            } catch (e) {
-              return false;
-            }
+        function hasAnalyticsConsent() {
+          try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return false;
+            return JSON.parse(raw).analytics === true;
+          } catch (e) {
+            return false;
           }
+        }
 
-          function loadGA() {
-            if (window.__clarvoGaLoaded) return;
-            window.__clarvoGaLoaded = true;
-            var s = document.createElement("script");
-            s.async = true;
-            s.src = "https://www.googletagmanager.com/gtag/js?id=" + measurementId;
-            document.head.appendChild(s);
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { window.dataLayer.push(arguments); }
-            window.gtag = gtag;
-            gtag("js", new Date());
-            gtag("config", measurementId);
-          }
+        function loadGA() {
+          if (window.__clarvoGaLoaded) return;
+          window.__clarvoGaLoaded = true;
+          var esGTM = measurementId.indexOf("GTM-") === 0;
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { window.dataLayer.push(arguments); }
+          window.gtag = gtag;
+          gtag("js", new Date());
+          var s = document.createElement("script");
+          s.async = true;
+          // Contenedor de Google Tag Manager (GTM-XXXXXXX): el tag de
+          // configuración de GA4 vive dentro del contenedor en
+          // tagmanager.google.com, nunca aquí — por eso no se llama
+          // gtag("config", ...) en esta rama.
+          s.src = esGTM
+            ? "https://www.googletagmanager.com/gtm.js?id=" + measurementId
+            : "https://www.googletagmanager.com/gtag/js?id=" + measurementId;
+          document.head.appendChild(s);
+          if (!esGTM) gtag("config", measurementId);
+        }
 
-          if (hasAnalyticsConsent()) loadGA();
-          window.addEventListener(CONSENT_EVENT, function (e) {
-            if (e.detail && e.detail.analytics) loadGA();
-          });
-        })();
-      `}
+        if (hasAnalyticsConsent()) loadGA();
+        window.addEventListener(CONSENT_EVENT, function (e) {
+          if (e.detail && e.detail.analytics) loadGA();
+        });
+      })();
     </script>
   )
 }
