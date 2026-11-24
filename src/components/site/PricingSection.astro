@@ -169,6 +169,8 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     reportes_eliminados_habilitado: number;
     reportes_estado_inventario_habilitado: number;
     reportes_estado_tickets_habilitado: number;
+    pedidos_habilitado: number;
+    crm_habilitado: number;
   }
 
   function svg(inner: string) {
@@ -185,6 +187,8 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     sucursales: svg('<path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/>'),
     marca: svg('<path d="M12 2l2.6 6.6L21 9l-5 4.4L17.4 21 12 17.3 6.6 21 8 13.4 3 9l6.4-.4z"/>'),
     promos: svg('<path d="M3 11l18-8-8 18-2-8-8-2z"/>'),
+    pedidos: svg('<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" stroke-linecap="round" stroke-linejoin="round"/>'),
+    crm: svg('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
   };
   const ICONO_REPORTES = svg('<path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 16v-4M12 16V8M17 16v-7" stroke-linecap="round"/>');
   for (const c of ["reportes_por_reporte", "reportes_cortes", "reportes_eliminados", "reportes_estado_inventario", "reportes_estado_tickets"]) {
@@ -201,6 +205,8 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     sucursales: "Sucursales (grupo)",
     marca: "Personalización de marca",
     promos: "Campañas de promociones",
+    pedidos: "Pedidos (kanban de pre-ventas)",
+    crm: "Clientes (CRM)",
     reportes_por_reporte: "Reportes por periodo (automático/manual)",
     reportes_cortes: "Cortes de ventas",
     reportes_eliminados: "Reporte de eliminados",
@@ -208,7 +214,7 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     reportes_estado_tickets: "Estado de tickets",
   };
   const GRUPOS: Array<{ titulo: string; claves: string[] }> = [
-    { titulo: "Operación", claves: ["ventas", "gastos", "inventarios", "cxc"] },
+    { titulo: "Operación", claves: ["ventas", "pedidos", "crm", "gastos", "inventarios", "cxc"] },
     { titulo: "Facturación y clientes", claves: ["facturacion", "portal"] },
     {
       titulo: "Reportes",
@@ -234,6 +240,8 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     sucursales: "sucursales_habilitado",
     marca: "marca_lookfeel_habilitado",
     promos: "promociones_habilitado",
+    pedidos: "pedidos_habilitado",
+    crm: "crm_habilitado",
     reportes_por_reporte: "reportes_por_reporte_habilitado",
     reportes_cortes: "reportes_cortes_habilitado",
     reportes_eliminados: "reportes_eliminados_habilitado",
@@ -266,8 +274,16 @@ import OnboardingModal from "../onboarding/OnboardingModal";
     const precioAnual = Number(plan.precio_anual ?? 0);
     const sinPrecio = plan.precio_mensual === null;
 
+    // "pedidos" depende de "ventas" (mismo AND que ya exige el backend/
+    // admin.js) — el catálogo real puede traer pedidos_habilitado=1 sin
+    // ventas_habilitado=1 (backfill histórico de puntos existentes antes
+    // de esta regla), pero mostrarlo suelto aquí anunciaría una feature
+    // que el tenant no podría usar.
+    const ventasActiva = Number(plan.ventas_habilitado) === 1;
     const grupos = GRUPOS.map((g) => {
-      const activos = g.claves.filter((c) => Number(plan[FLAG_POR_CLAVE[c]]) === 1);
+      const activos = g.claves.filter(
+        (c) => Number(plan[FLAG_POR_CLAVE[c]]) === 1 && (c !== "pedidos" || ventasActiva)
+      );
       if (!activos.length) return "";
       const items = activos
         .map(
