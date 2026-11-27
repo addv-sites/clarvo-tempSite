@@ -489,7 +489,7 @@ import OnboardingModal from "../onboarding/OnboardingModal";
         const ciclo = periodoActivo?.dataset.periodBtn === "annual" ? "anual" : "mensual";
         window.dispatchEvent(
           new CustomEvent("clarvo:abrir-onboarding", {
-            detail: { planClave: btn.dataset.openOnboarding, ciclo },
+            detail: { planClave: btn.dataset.openOnboarding, ciclo, modo: "pago" },
           })
         );
       });

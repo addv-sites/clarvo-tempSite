@@ -122,6 +122,25 @@ export function pagarBorrador(token: string, recaptchaToken: string) {
   });
 }
 
+// Prueba gratis de 10 días (Asistente V) — activa el tenant de inmediato,
+// sin Stripe de por medio (control/utils/onboardingConversion.js,
+// suscripcion_estatus='prueba'). Mismo reCAPTCHA que pagarBorrador(): es
+// el único candado anti-bot de esta ruta, ya que aquí no hay tarjeta que
+// filtre abuso.
+export interface ResultadoPrueba {
+  ok: true;
+  slug: string;
+  urlAdmin: string;
+  urlPortal: string | null;
+}
+
+export function activarPruebaGratis(token: string, recaptchaToken: string) {
+  return solicitar<ResultadoPrueba>(`/api/public/onboarding/activar-prueba/${encodeURIComponent(token)}`, {
+    method: "POST",
+    body: JSON.stringify({ recaptchaToken }),
+  });
+}
+
 export interface EstadoPago {
   pagoEstado: "pendiente" | "confirmado" | "fallido" | null;
   metodoPago: string | null;
@@ -150,7 +169,9 @@ export async function slugDisponible(slug: string): Promise<boolean> {
 // Nunca bloquea una compra real: si esta llamada falla (red, /control
 // caído un momento), el caller trata el error como "modo producción"
 // (fail-open, decisión explícita del negocio — el aviso es cortesía, no
-// un candado de seguridad).
+// un candado de seguridad). Solo aplica al camino de pago directo
+// (Stripe) — la prueba gratis de 10 días nunca toca Stripe, así que
+// nunca consulta este switch.
 export type ModoCobro = "prueba" | "produccion";
 
 export async function modoCobro(): Promise<ModoCobro> {

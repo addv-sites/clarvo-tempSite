@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   actualizarBorrador,
+  activarPruebaGratis,
   pagarBorrador,
   estadoPago,
   crearBorrador,
@@ -131,11 +132,22 @@ const ESTADO_INICIAL: EstadoBorrador = {
   adminPassword2: "",
 };
 
+// Dos caminos de entrada al mismo wizard (decisión del usuario, punto en
+// curso): los CTA genéricos ("Comienza gratis"/"Quiero mi prueba gratis",
+// vía PlanPicker.astro) mandan modo:"prueba" — activación inmediata de
+// 10 días, sin Stripe. Las tarjetas de plan de PricingSection.astro
+// ("Comenzar con <Plan>") mandan modo:"pago" — contratación directa, el
+// camino original con Stripe, intacto. Default "pago" si el evento no
+// trae modo (nunca debería pasar con los 2 emisores ya actualizados,
+// pero mantiene el comportamiento de siempre como fallback seguro).
+type ModoFlujo = "prueba" | "pago";
+
 // Consulta el modo de cobro UNA sola vez por carga de página (varios
 // clics en "Comprar" durante la misma visita no deben disparar varios
 // fetches) — fail-open a propósito: si la consulta falla, se trata como
 // "producción" para nunca bloquear una venta real por un problema
-// técnico ajeno al cobro (decisión explícita del negocio).
+// técnico ajeno al cobro (decisión explícita del negocio). Solo se
+// consulta para modoFlujo==="pago" — la prueba gratis nunca toca Stripe.
 let modoCobroCache: Promise<"prueba" | "produccion"> | null = null;
 function resolverModoCobro(): Promise<"prueba" | "produccion"> {
   if (!modoCobroCache) {
@@ -151,9 +163,15 @@ export default function OnboardingModal() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultadoActivacion, setResultadoActivacion] = useState<ResultadoActivacion | null>(null);
+  // true cuando resultadoActivacion vino de activarPrueba() (prueba de 10
+  // días, sin Stripe de por medio) — false para el camino de pago directo
+  // ya existente (pagarBorrador()/webhook), que se conserva intacto por si
+  // se reactiva más adelante (ver nota en PasoCompletado).
+  const [activacionEsPrueba, setActivacionEsPrueba] = useState(false);
   const [pagoInfo, setPagoInfo] = useState<EstadoPago | null>(null);
   const [slugEstado, setSlugEstado] = useState<"idle" | "revisando" | "disponible" | "tomado">("idle");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [modoFlujo, setModoFlujo] = useState<ModoFlujo>("pago");
   const [gateMantenimiento, setGateMantenimiento] = useState(false);
   const [preciosPlanes, setPreciosPlanes] = useState<Record<string, InfoPlan>>({});
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -166,6 +184,7 @@ export default function OnboardingModal() {
     setError(null);
     setSlugEstado("idle");
     setResultadoActivacion(null);
+    setActivacionEsPrueba(false);
     setGateMantenimiento(false);
     setPaso("plan");
     setEstado({ ...ESTADO_INICIAL, planClave: detalle.planClave, ciclo: detalle.ciclo || "mensual" });
@@ -175,13 +194,27 @@ export default function OnboardingModal() {
 
   useEffect(() => {
     async function onAbrir(e: Event) {
-      const detalle = (e as CustomEvent<{ planClave: string; ciclo?: Ciclo }>).detail;
-      const [modo, precios] = await Promise.all([
+      const detalle = (e as CustomEvent<{ planClave: string; ciclo?: Ciclo; modo?: ModoFlujo }>).detail;
+      const modo = detalle.modo ?? "pago";
+      setModoFlujo(modo);
+
+      if (modo === "prueba") {
+        // Prueba gratis de 10 días: nunca toca Stripe, así que nunca
+        // consulta resolverModoCobro() ni puede caer en el gate de
+        // mantenimiento de abajo (ese es solo para el camino de pago).
+        abrirWizardReal(detalle);
+        const precios = await resolverPreciosPlanes().catch(() => null);
+        if (precios) setPreciosPlanes(precios);
+        if (!precios) setError("No se pudo cargar el precio actual del plan. Cierra esto e inténtalo de nuevo.");
+        return;
+      }
+
+      const [modoCobroResuelto, precios] = await Promise.all([
         resolverModoCobro(),
         resolverPreciosPlanes().catch(() => null),
       ]);
       if (precios) setPreciosPlanes(precios);
-      if (modo === "prueba") {
+      if (modoCobroResuelto === "prueba") {
         detallePendienteRef.current = detalle;
         setGateMantenimiento(true);
         setAbierto(true);
@@ -396,11 +429,41 @@ export default function OnboardingModal() {
     }
   }
 
-  // Último paso del wizard: ya NO activa nada directo — crea el Checkout
-  // Session real y manda al visitante a pagar en Stripe. El reCAPTCHA se
-  // exige AQUÍ: este es el único paso que de verdad mueve dinero/llama a
-  // la API de Stripe, así que es el que hay que proteger de bots — ver
-  // DOCS/recaptcha.html y DOCS/confStripe.html.
+  // Último paso del wizard (prueba gratis de 10 días, Asistente V): activa
+  // la cuenta de inmediato, SIN tocar Stripe — nunca pide tarjeta aquí. El
+  // reCAPTCHA se conserva como único candado anti-bot de esta ruta (no hay
+  // tarjeta/Checkout que filtre bots como en el camino de pago directo de
+  // abajo) — ver control/utils/onboardingConversion.js y
+  // POST /api/public/onboarding/activar-prueba/:token.
+  async function activarPrueba() {
+    if (!recaptchaToken) {
+      setError("Completa la verificación de seguridad antes de continuar.");
+      return;
+    }
+    setCargando(true);
+    setError(null);
+    try {
+      const token = await asegurarBorrador();
+      await actualizarBorrador(token, { ciclo: estado.ciclo, pasoActual: "pago" });
+      const resultado = await activarPruebaGratis(token, recaptchaToken);
+      trackEvent("trial_iniciado", { plan: estado.planClave, ciclo: estado.ciclo });
+      setResultadoActivacion({ slug: resultado.slug, urlAdmin: resultado.urlAdmin, urlPortal: resultado.urlPortal });
+      setActivacionEsPrueba(true);
+      setPaso("completado");
+    } catch (err) {
+      setError(err instanceof OnboardingApiError ? err.message : "Ocurrió un error. Intenta de nuevo.");
+      setRecaptchaToken(null);
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  // Último paso del wizard para contratación directa (modoFlujo==="pago",
+  // tarjetas de plan de PricingSection — camino intacto, sin tocar):
+  // crea el Checkout Session real y manda al visitante a pagar en
+  // Stripe. El reCAPTCHA se exige AQUÍ: este es el único paso que de
+  // verdad mueve dinero/llama a la API de Stripe — ver DOCS/recaptcha.html
+  // y DOCS/confStripe.html.
   async function irAPagar() {
     if (!recaptchaToken) {
       setError("Completa la verificación de seguridad antes de continuar.");
@@ -593,7 +656,21 @@ export default function OnboardingModal() {
           />
         )}
 
-        {paso === "pago" && (
+        {paso === "pago" && modoFlujo === "prueba" && (
+          <PasoActivarPrueba
+            estado={estado}
+            nombrePlan={nombrePlanActual}
+            precio={precio}
+            cargando={cargando}
+            recaptchaToken={recaptchaToken}
+            onRecaptchaToken={setRecaptchaToken}
+            onRecaptchaExpire={() => setRecaptchaToken(null)}
+            onAtras={() => setPaso("credenciales")}
+            onContinuar={activarPrueba}
+          />
+        )}
+
+        {paso === "pago" && modoFlujo === "pago" && (
           <PasoPago
             estado={estado}
             nombrePlan={nombrePlanActual}
@@ -613,6 +690,7 @@ export default function OnboardingModal() {
             nombrePlan={nombrePlanActual}
             precio={precio}
             resultado={resultadoActivacion}
+            esPrueba={activacionEsPrueba}
             pagoInfo={pagoInfo}
             onCerrar={cerrar}
           />
@@ -633,10 +711,12 @@ function Titulo({ eyebrow, children }: { eyebrow: string; children: React.ReactN
   );
 }
 
-// Aviso de mantenimiento (switch de /control en modo prueba) — se
-// muestra en vez del wizard, nunca lo reemplaza de forma permanente:
+// Aviso de mantenimiento (switch de /control en modo prueba de Stripe) —
+// solo aplica al camino de pago directo (modoFlujo==="pago"): se
+// muestra en vez del wizard, nunca lo reemplaza de forma permanente.
 // "Continuar" abre el wizard real tal cual, con el plan/ciclo que el
-// visitante ya había elegido.
+// visitante ya había elegido. La prueba gratis de 10 días nunca pasa
+// por aquí (no toca Stripe).
 function PasoGateMantenimiento({
   onEntendido,
   onContinuar,
@@ -786,6 +866,98 @@ function PasoPlan({
   );
 }
 
+// Último paso del wizard (reemplaza el antiguo "Método de pago", punto en
+// curso — prueba gratis de 10 días, concepto "Asistente V"): nunca pide
+// tarjeta aquí. El checklist de 3 puntos es el contrato completo con el
+// visitante — qué pasa hoy, qué pasa el día 7 (recordatorio, nunca
+// bloqueante) y qué pasa el día 10 (cobro automático si ya agregó tarjeta,
+// pausa si no) — para que decida con la información completa por delante,
+// sin sorpresas más adelante.
+function PasoActivarPrueba({
+  estado,
+  nombrePlan,
+  precio,
+  cargando,
+  recaptchaToken,
+  onRecaptchaToken,
+  onRecaptchaExpire,
+  onAtras,
+  onContinuar,
+}: {
+  estado: EstadoBorrador;
+  nombrePlan: string;
+  precio: number;
+  cargando: boolean;
+  recaptchaToken: string | null;
+  onRecaptchaToken: (token: string) => void;
+  onRecaptchaExpire: () => void;
+  onAtras: () => void;
+  onContinuar: () => void;
+}) {
+  const sufijoCiclo = estado.ciclo === "mensual" ? "/mes" : "/año";
+  return (
+    <div>
+      <Titulo eyebrow="Paso 5 de 5">Activa tu prueba gratis</Titulo>
+
+      <div className="mt-4 flex items-center gap-3 rounded-2xl border border-accent-electric/30 bg-accent-electric/5 p-4">
+        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-accent-electric text-sm font-bold text-surface-deep">
+          V
+        </span>
+        <p className="text-sm leading-relaxed text-text-secondary">
+          Soy V, de Clarvo. Vas a entrar a <span className="text-text-primary">{nombrePlan}</span> con{" "}
+          <span className="font-semibold text-text-primary">10 días completos, gratis</span> — sin pedirte tarjeta
+          hoy.
+        </p>
+      </div>
+
+      <ul className="mt-5 flex flex-col gap-2.5 text-left text-sm text-text-secondary">
+        <li className="flex items-start gap-2">
+          <IconoCheckLista />
+          Hoy: acceso completo a {nombrePlan}, sin tarjeta.
+        </li>
+        <li className="flex items-start gap-2">
+          <IconoCheckLista />
+          Día 7: te recuerdo agregar tu método de pago — puedes posponerlo cuantas veces quieras.
+        </li>
+        <li className="flex items-start gap-2">
+          <IconoCheckLista />
+          Día 10: si ya la agregaste, cobramos ${dinero(precio)}
+          {sufijoCiclo} y sigues sin interrupciones. Si no, pausamos el acceso hasta que decidas.
+        </li>
+      </ul>
+
+      <RecaptchaWidget onToken={onRecaptchaToken} onExpire={onRecaptchaExpire} />
+
+      <div className="mt-6 flex gap-3">
+        <BotonAtras onClick={onAtras} />
+        <div className="flex-1">
+          <BotonContinuar onClick={onContinuar} cargando={cargando} deshabilitado={!recaptchaToken}>
+            Activar mi prueba gratis
+          </BotonContinuar>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IconoCheckLista() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="mt-0.5 h-3.5 w-3.5 flex-none text-accent-success"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      aria-hidden="true"
+    >
+      <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Último paso del wizard para contratación directa (modoFlujo==="pago",
+// tarjetas de plan de PricingSection) — camino original con Stripe,
+// intacto, sin tocar.
 function PasoPago({
   estado,
   nombrePlan,
@@ -1132,6 +1304,7 @@ function PasoCompletado({
   nombrePlan,
   precio,
   resultado,
+  esPrueba,
   pagoInfo,
   onCerrar,
 }: {
@@ -1139,9 +1312,60 @@ function PasoCompletado({
   nombrePlan: string;
   precio: number;
   resultado: ResultadoActivacion | null;
+  esPrueba: boolean;
   pagoInfo: EstadoPago | null;
   onCerrar: () => void;
 }) {
+  // Prueba gratis de 10 días recién activada (Asistente V) — nunca pasó
+  // por Stripe, así que pagoInfo siempre es null aquí; esPrueba es la
+  // única señal. "V se despide" hasta el recordatorio del día 7.
+  if (resultado && esPrueba) {
+    return (
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-accent-electric/40 bg-accent-electric/10">
+          <span className="text-lg font-bold text-accent-electric">V</span>
+        </div>
+        <h2 className="font-display text-xl font-bold text-text-primary">¡Tu prueba ya está activa!</h2>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+          {nombrePlan} para <span className="text-text-primary">clarvo.mx/{resultado.slug}</span> — Día 1 de 10.
+          {estado.adminEmail || estado.contactoEmail ? (
+            <>
+              {" "}Te enviamos tus accesos a{" "}
+              <span className="text-text-primary">{estado.adminEmail || estado.contactoEmail}</span>.
+            </>
+          ) : (
+            " Revisa tu correo para tus accesos."
+          )}
+        </p>
+        <div className="mt-4 rounded-xl bg-surface px-4 py-3 text-xs leading-relaxed text-text-secondary">
+          Nos vemos el día 7 para recordarte agregar tu método de pago — hasta entonces, usa tu panel sin
+          interrupciones ni tarjeta de por medio.
+        </div>
+        <a
+          href={resultado.urlAdmin}
+          className="mt-6 block w-full rounded-full bg-accent-electric px-5 py-3 text-sm font-semibold text-surface-deep transition hover:brightness-110"
+        >
+          Entrar a mi panel
+        </a>
+        {resultado.urlPortal && (
+          <a
+            href={resultado.urlPortal}
+            className="mt-3 block w-full rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-text-primary transition hover:border-white/30"
+          >
+            Ver portal de clientes
+          </a>
+        )}
+        <button
+          type="button"
+          onClick={onCerrar}
+          className="mt-3 w-full text-xs font-semibold text-text-muted transition hover:text-text-secondary"
+        >
+          Cerrar
+        </button>
+      </div>
+    );
+  }
+
   // Rechazado: el único caso que necesita que el visitante vuelva a
   // intentar algo — no hay nada que esperar, el pago ya falló de verdad.
   if (pagoInfo?.pagoEstado === "fallido" && !resultado) {
